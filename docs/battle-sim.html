@@ -84,15 +84,15 @@
 
 <p>Print exactly one of these:</p>
 
-<pre><code>Fighter 1 wins!
+<pre class="run"><code>Fighter 1 wins!
 Fighter 2 wins!
 It's a draw!</code></pre>
 
 <h2>Example</h2>
 
-<p>What you type is in yellow.</p>
+<p>What you type is highlighted.</p>
 
-<pre><code>BATTLE SIM
+<pre class="run"><code>BATTLE SIM
 Enter two fighters and I'll tell you who wins.
 
 Fighter 1:
@@ -148,7 +148,7 @@ Fighter 1 wins!</code></pre>
 
 <details>
 <summary>Input goes wrong after a number</summary>
-<p>If you add any text input, <code>nextInt()</code> leaves the Enter key in the buffer and the next <code>nextLine()</code> comes back empty.</p>
+<p>If you add any text input, <code>nextInt()</code> reads the digits and stops, leaving the Enter key you pressed still waiting. The next <code>nextLine()</code> grabs that and comes back empty. Add one extra <code>input.nextLine();</code> to swallow it.</p>
 </details>
 
 <h2>Requirements</h2>
@@ -188,15 +188,7 @@ Fighter 1 wins!</code></pre>
 </div>
 </div>
 
-<script>
-document.querySelectorAll('#cl input').forEach(function (box) {
-  var key = 'bs-' + box.id;
-  box.checked = localStorage.getItem(key) === '1';
-  box.addEventListener('change', function () {
-    localStorage.setItem(key, box.checked ? '1' : '0');
-  });
-});
-</script>
+<script src="app.js" defer></script>
 
 </body>
 </html>

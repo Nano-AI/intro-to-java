@@ -61,12 +61,32 @@
 
 <h2 id="division">The division trap</h2>
 
-<p>Divide two whole numbers and Java gives you a whole number back. It throws the remainder away.</p>
+<p>Divide two whole numbers and Java throws the remainder away. Drag it.</p>
 
-<pre><code><span class="k">double</span> a = 5 / 2;    <span class="c">// 2.0, not 2.5</span>
-<span class="k">double</span> b = 5 / 2.0;  <span class="c">// 2.5</span></code></pre>
+<div class="demo">
+  <div class="ctl">
+    <label for="num">a</label>
+    <input id="num" type="range" min="1" max="20" value="5">
+    <span class="val" id="numv">5</span>
+  </div>
 
-<p>The fix is to make sure one side is a decimal. Any of these work:</p>
+  <div class="divrow">
+    <span class="lbl2">whole</span>
+    <span><span id="e1">5</span> / 2</span>
+    <span>=</span>
+    <span class="res" id="r1">2</span>
+    <span class="lost" id="lost">.5 thrown away</span>
+  </div>
+
+  <div class="divrow" style="margin-top:0.9rem">
+    <span class="lbl2">decimal</span>
+    <span><span id="e2">5</span> / 2.0</span>
+    <span>=</span>
+    <span class="res" id="r2">2.5</span>
+  </div>
+</div>
+
+<p>The fix is to make one side a decimal. Any of these work:</p>
 
 <pre><code>5 / 2.0
 5.0 / 2
@@ -74,12 +94,12 @@
 
 <div class="note warn">
 <span class="h">Why this matters</span>
-<p>This is the single most common bug for the next month. When a number comes out as <code>0.0</code> and you cannot see why, this is almost always it.</p>
+<p>When a number comes out <code>0.0</code> and you cannot see why, this is almost always it.</p>
 </div>
 
 <h2 id="casting">Casting</h2>
 
-<p>Casting changes a value from one type to another. You put the type you want in brackets in front of it.</p>
+<p>Casting changes a value from one type to another. Put the type you want in brackets in front of it.</p>
 
 <pre><code>(<span class="k">int</span>) 3.4      <span class="c">// 3</span>
 (<span class="k">int</span>) 3.9      <span class="c">// 3, not 4</span>
@@ -92,18 +112,22 @@
 
 <h2 id="input">User input</h2>
 
-<p>A <code>Scanner</code> reads what the user types. Three parts to it.</p>
+<p>A <code>Scanner</code> reads what the user types. Three parts.</p>
 
-<pre><code><span class="k">import</span> java.util.Scanner;   <span class="c">// 1. at the very top of the file</span>
+<pre><code>// 1. at the very top of the file
+import java.util.Scanner;
 
-<span class="k">public class</span> Greeter {
-    <span class="k">public static void</span> main(String[] args) {
-        Scanner scanner = <span class="k">new</span> Scanner(System.in);   <span class="c">// 2. make one</span>
+public class Greeter {
+    public static void main(String[] args) {
+        // 2. make one Scanner
+        Scanner scanner = new Scanner(System.in);
 
-        System.out.println(<span class="s">"What is your name?"</span>);
-        String name = scanner.nextLine();               <span class="c">// 3. read</span>
+        System.out.println("What is your name?");
 
-        System.out.println(<span class="s">"Hello, "</span> + name + <span class="s">"!"</span>);
+        // 3. read whatever they type
+        String name = scanner.nextLine();
+
+        System.out.println("Hello, " + name + "!");
     }
 }</code></pre>
 
@@ -143,7 +167,7 @@
 <p>Store a human age in an <code>int</code>, convert it to dog years, and print the result. One dog year is about seven human years.</p>
 
 <span class="lbl">Example output</span>
-<pre><code>A 12 year old human is 84 in dog years.</code></pre>
+<pre class="run"><code>A 12 year old human is 84 in dog years.</code></pre>
 
 <details>
 <summary>Hint 1</summary>
@@ -161,7 +185,7 @@
 <p>Change your dog years program so it asks the user for their age instead of having it fixed in the code.</p>
 
 <span class="lbl">Example run</span>
-<pre><code>How old are you?
+<pre class="run"><code>How old are you?
 <b>12</b>
 A 12 year old human is 84 in dog years.</code></pre>
 
@@ -181,7 +205,7 @@ A 12 year old human is 84 in dog years.</code></pre>
 <p>Ask for a number of sweets and a number of people. Print how many each person gets and how many are left over.</p>
 
 <span class="lbl">Example run</span>
-<pre><code>Sweets? <b>17</b>
+<pre class="run"><code>Sweets? <b>17</b>
 People? <b>5</b>
 3 each, 2 left over.</code></pre>
 
@@ -203,6 +227,46 @@ People? <b>5</b>
 </main>
 </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+<script>
+(function () {
+  var slider = document.getElementById('num');
+  var out = {
+    v: document.getElementById('numv'),
+    e1: document.getElementById('e1'), r1: document.getElementById('r1'),
+    e2: document.getElementById('e2'), r2: document.getElementById('r2'),
+    lost: document.getElementById('lost')
+  };
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var wasOdd = null;
+
+  function update() {
+    var a = +slider.value;
+    var whole = Math.floor(a / 2);
+    var exact = a / 2;
+    var odd = a % 2 === 1;
+
+    out.v.textContent = a;
+    out.e1.textContent = a;
+    out.e2.textContent = a;
+    out.r1.textContent = whole;
+    out.r2.textContent = exact.toFixed(1);
+    out.lost.textContent = odd ? '.5 thrown away' : 'nothing lost';
+    out.lost.style.color = odd ? '' : 'var(--dim)';
+
+    if (!still && window.anime && odd && odd !== wasOdd) {
+      anime({ targets: out.lost, translateY: [-10, 0], opacity: [0, 1], duration: 380, easing: 'easeOutQuad' });
+    }
+    wasOdd = odd;
+  }
+
+  slider.addEventListener('input', update);
+  update();
+}());
+</script>
+
+<script src="app.js" defer></script>
 
 </body>
 </html>

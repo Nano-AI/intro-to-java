@@ -36,14 +36,26 @@
 
 <h2>Boxes</h2>
 
-<p>Think of a variable as a labelled box. You put a value in it, and later you can look inside using the label.</p>
+<p>A variable is a labelled box. Each box has a type, so Java knows what fits.</p>
 
-<p>Two rules that catch people:</p>
+<div class="demo">
+  <div class="ctl">
+    <button id="fill">Put values in</button>
+    <span>five boxes, five types</span>
+  </div>
+  <div class="boxes" id="boxes">
+    <div class="box"><span class="bt">String</span><span class="bn">name</span><span class="bv" data-v="&quot;Sam&quot;"></span></div>
+    <div class="box"><span class="bt">int</span><span class="bn">age</span><span class="bv" data-v="12"></span></div>
+    <div class="box"><span class="bt">double</span><span class="bn">pi</span><span class="bv" data-v="3.14"></span></div>
+    <div class="box"><span class="bt">boolean</span><span class="bn">likesPizza</span><span class="bv" data-v="true"></span></div>
+    <div class="box"><span class="bt">char</span><span class="bn">initial</span><span class="bv" data-v="'S'"></span></div>
+  </div>
+</div>
 
-<ul>
-  <li>Names are case-sensitive. <code>score</code> and <code>Score</code> are two different boxes.</li>
-  <li>Every box has a <b>type</b>, so Java knows what kind of thing is going in it.</li>
-</ul>
+<div class="note warn">
+<span class="h">Case matters</span>
+<p><code>score</code> and <code>Score</code> are two different boxes.</p>
+</div>
 
 <h2>The five types</h2>
 
@@ -67,36 +79,30 @@
 
 <h2>The format</h2>
 
-<pre><code><span class="k">int</span> age = 16;
- &#8593;    &#8593;    &#8593;  &#8593;
-type name value ends the line</code></pre>
+<div class="anat">
+  <div><span class="tok k">int</span><span class="cap">type</span></div>
+  <div><span class="tok">age</span><span class="cap">name</span></div>
+  <div><span class="tok">=</span><span class="cap"></span></div>
+  <div><span class="tok n">16</span><span class="cap">value</span></div>
+  <div><span class="tok">;</span><span class="cap">ends it</span></div>
+</div>
 
-<p>Names can use <code>a-z</code>, <code>A-Z</code>, <code>0-9</code> and <code>_</code>. No spaces, and they cannot start with a number.</p>
-
-<p>Every statement ends with a semicolon. It tells Java the line stops there.</p>
+<p>Names use <code>a-z</code>, <code>A-Z</code>, <code>0-9</code> and <code>_</code>. No spaces, and they cannot start with a number. Every statement ends with a semicolon.</p>
 
 <h2>Problems</h2>
 
 <div class="problem">
 <h3>1. Name the type</h3>
-<p>For each question, write down which Java type you would store the answer in.</p>
+<p>Pick the type you would store each answer in.</p>
 
-<div class="scroll">
-<table>
-  <thead><tr><th>Question</th><th>Type</th></tr></thead>
-  <tbody>
-    <tr><td>What is your name?</td><td></td></tr>
-    <tr><td>How old are you?</td><td></td></tr>
-    <tr><td>Is pineapple on pizza good?</td><td></td></tr>
-    <tr><td>What digits of pi can you remember?</td><td></td></tr>
-    <tr><td>What is your favourite letter?</td><td></td></tr>
-  </tbody>
-</table>
+<div class="quiz" id="quiz"
+     data-q='[["What is your name?","String"],["How old are you?","int"],["Is pineapple on pizza good?","boolean"],["What digits of pi can you remember?","double"],["What is your favourite letter?","char"]]'>
+  <p class="score" id="score">Not started</p>
 </div>
 
 <details>
 <summary>Hint</summary>
-<p>Ask yourself: words, a whole number, a decimal, one letter, or a yes/no?</p>
+<p>Words, a whole number, a decimal, one letter, or a yes/no?</p>
 </details>
 </div>
 
@@ -105,7 +111,7 @@ type name value ends the line</code></pre>
 <p>Open <code>AboutMe.java</code>, fill in the five variables with your own answers, then run it.</p>
 
 <span class="lbl">Example output</span>
-<pre><code>Name: Sam
+<pre class="run"><code>Name: Sam
 Age: 12
 Favourite number: 7.5
 First initial: S
@@ -130,7 +136,7 @@ Pineapple on pizza: true</code></pre>
   <li>Put two letters into a <code>char</code>.</li>
   <li>Name a variable <code>2cool</code>.</li>
 </ul>
-<p>You are learning what the error messages mean, which is most of debugging.</p>
+<p>Which of the three messages was easiest to understand? Which one would you not have guessed from the error alone?</p>
 </div>
 
 <a class="next" href="week-02.html">
@@ -145,6 +151,99 @@ Pineapple on pizza: true</code></pre>
 </main>
 </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+<script>
+(function () {
+  var btn = document.getElementById('fill');
+  var cells = Array.prototype.slice.call(document.querySelectorAll('#boxes .bv'));
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var full = false;
+
+  btn.addEventListener('click', function () {
+    full = !full;
+    btn.textContent = full ? 'Empty them' : 'Put values in';
+
+    if (still || !window.anime) {
+      cells.forEach(function (c) { c.textContent = full ? c.dataset.v : ''; });
+      return;
+    }
+    anime({
+      targets: cells,
+      opacity: full ? [0, 1] : [1, 0],
+      translateY: full ? [-14, 0] : [0, 10],
+      duration: 420,
+      delay: anime.stagger(90),
+      easing: 'easeOutQuad',
+      begin: function () { if (full) cells.forEach(function (c) { c.textContent = c.dataset.v; }); },
+      complete: function () { if (!full) cells.forEach(function (c) { c.textContent = ''; }); }
+    });
+  });
+}());
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+<script>
+(function () {
+  var box = document.getElementById('quiz');
+  var score = document.getElementById('score');
+  var qs = JSON.parse(box.dataset.q);
+  var types = ['String', 'int', 'double', 'boolean', 'char'];
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var done = 0, right = 0;
+
+  qs.forEach(function (pair, i) {
+    var row = document.createElement('div');
+    row.className = 'q';
+
+    var q = document.createElement('span');
+    q.className = 'qt';
+    q.textContent = (i + 1) + '. ' + pair[0];
+    row.appendChild(q);
+
+    var opts = document.createElement('div');
+    opts.className = 'opts';
+
+    types.forEach(function (t) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = t;
+      b.addEventListener('click', function () {
+        if (row.classList.contains('done')) return;
+        row.classList.add('done');
+        done++;
+
+        var ok = t === pair[1];
+        if (ok) { b.classList.add('right'); right++; }
+        else {
+          b.classList.add('wrong');
+          opts.querySelectorAll('button').forEach(function (o) {
+            if (o.textContent === pair[1]) o.classList.add('right');
+          });
+        }
+
+        score.innerHTML = 'Answered <b>' + done + '</b> of ' + qs.length + ', <b>' + right + '</b> right';
+
+        if (!still && window.anime) {
+          anime({
+            targets: b,
+            translateX: ok ? 0 : [0, -5, 5, -3, 3, 0],
+            scale: ok ? [1, 1.08, 1] : 1,
+            duration: ok ? 320 : 380,
+            easing: 'easeOutQuad'
+          });
+        }
+      });
+      opts.appendChild(b);
+    });
+
+    row.appendChild(opts);
+    box.insertBefore(row, score);
+  });
+}());
+</script>
+
+<script src="app.js" defer></script>
 
 </body>
 </html>
