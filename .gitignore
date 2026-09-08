@@ -1,0 +1,9 @@
+*.class
+.DS_Store
+teacher/
+print/*.aux
+print/*.log
+print/*.out
+print/*.toc
+print/*.pdf
+print/*.png
