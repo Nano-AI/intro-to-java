@@ -644,3 +644,34 @@ ol.weeks .t em {
 }
 .exhint:last-child { margin-bottom: 0; }
 .ex .q .exhint { margin-top: 0.5rem; }
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 560px) {
+  body { font-size: 1.0625rem; }
+
+  /* more characters per line before a code block has to scroll */
+  pre { font-size: 0.75rem; padding: 0.85rem 0.9rem; }
+  .chain { font-size: 0.75rem; }
+  .chain .br { flex-wrap: wrap; gap: 0.3rem; }
+  .chain .br .st { font-size: 0.625rem; }
+
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.4rem; }
+
+  .problem, .ex, .demo { padding-left: 1rem; padding-right: 1rem; }
+  .zip { padding: 0.9rem 1rem; }
+  .zip a { width: 100%; text-align: center; }
+
+  /* thumb-sized controls */
+  ol.order .nudge button { width: 2.25rem; height: 2.25rem; font-size: 0.875rem; }
+  ol.order li { flex-wrap: wrap; }
+  .demo input[type=range] { height: 2rem; }
+  summary { padding: 0.55rem 1rem; }
+}
+
+/* a comfortable grab area for the slider on every screen */
+.demo input[type=range] { height: 1.75rem; }
+
+/* JS off: exercises never render, so do not leave an empty card behind */
+.ex:empty { display: none; }
