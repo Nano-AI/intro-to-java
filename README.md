@@ -29,8 +29,6 @@ docs/                 the website, served by GitHub Pages
   style.css           the whole stylesheet
   starters/week-N/    source of truth for the starter files
   downloads/*.zip     what students actually click
-  print/*.pdf         printable version of week 3
-print/*.tex           LaTeX source for the printable version
 make-zips.sh          rebuilds docs/downloads/ from docs/starters/
 ```
 
@@ -57,16 +55,6 @@ rerun the script. Committing a stale zip is the easiest mistake to make here.
 3. Add a card to the list in `docs/index.html`.
 4. Point the previous week's `.next` link at the new page.
 
-## Building the printable PDF
-
-```
-cd print
-pdflatex week-03-conditionals.tex && pdflatex week-03-conditionals.tex
-cp week-03-conditionals.pdf ../docs/print/
-```
-
-Twice, because page references settle on the second pass. Needs a full TeX Live
-or MacTeX (`libertinus`, `sourcesanspro`, `inconsolata`, `tcolorbox`, `titlesec`).
 
 ## Credit
 
