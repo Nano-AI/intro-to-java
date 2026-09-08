@@ -5,7 +5,7 @@ starter files to open in jGRASP, and problems with progressive hints.
 
 Course order follows [UW CSE 142](https://courses.cs.washington.edu/courses/cse142/22sp/handouts.shtml).
 
-**Site:** https://USERNAME.github.io/REPO/
+**Site:** https://nano-ai.github.io/intro-to-java/
 
 ## Weeks
 
@@ -15,13 +15,16 @@ Course order follows [UW CSE 142](https://courses.cs.washington.edu/courses/cse1
 | 1 | Variables and types. |
 | 2 | Maths, casting, and user input with Scanner. |
 | 3 | Conditionals, plus the Battle Sim project. |
+| 4 | Methods: parameters and return values. |
 
 ## What is here
 
 ```
 docs/                 the website, served by GitHub Pages
   index.html          hub
-  week-00..03.html    one page per week
+  week-00..04.html    one page per week
+  app.js              syntax highlighting, scroll spy, checklists
+  quiz.js             pick / fill-in-the-blank / drag-to-order exercises
   battle-sim.html     week 3 project
   style.css           the whole stylesheet
   starters/week-N/    source of truth for the starter files

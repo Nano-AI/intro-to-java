@@ -69,6 +69,8 @@
 <p>A chain stops at the first branch that is true. Everything below it is skipped without being checked.</p>
 </div>
 
+<div class="ex" data-ex='{"type": "order", "prompt": "Bug 2 is the wrong way round. Drag these into an order that gives 95 an A.", "items": ["if (score &gt;= 90) { grade = \"A\"; }", "else if (score &gt;= 80) { grade = \"B\"; }", "else if (score &gt;= 70) { grade = \"C\"; }", "else if (score &gt;= 60) { grade = \"D\"; }", "else { grade = \"F\"; }"], "hint": "A chain stops at the first true branch, so the hardest test has to come first. &lt;code&gt;else&lt;/code&gt; always goes last."}'></div>
+
 <h2 id="predict">Predict the output</h2>
 
 <p>On paper, before you run them.</p>
@@ -390,6 +392,7 @@ Leap year.       Not a leap year.   Leap year.</code></pre>
 </script>
 
 <script src="app.js" defer></script>
+<script src="quiz.js" defer></script>
 
 </body>
 </html>

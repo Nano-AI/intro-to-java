@@ -361,20 +361,20 @@ footer { margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--lin
 .anat .cap:empty { visibility: hidden; }
 
 .quiz { margin: 0 0 0.5rem; }
-.quiz .q { padding: 0.85rem 0; border-bottom: 1px solid var(--line); }
-.quiz .q:last-of-type { border-bottom: 0; }
-.quiz .qt { display: block; margin-bottom: 0.55rem; font-size: 1rem; }
-.quiz .opts { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.quiz button {
+.quiz .q, .ex .q { padding: 0.85rem 0; border-bottom: 1px solid var(--line); }
+.quiz .q:last-of-type, .ex .q:last-of-type { border-bottom: 0; }
+.quiz .qt, .ex .qt { display: block; margin-bottom: 0.55rem; font-size: 1rem; }
+.quiz .opts, .ex .opts { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.quiz button, .ex .opts button {
   font-family: var(--mono); font-size: 0.8125rem;
   background: var(--surface-2); color: var(--text);
   border: 1px solid var(--line); border-radius: 6px;
   padding: 0.35rem 0.7rem; cursor: pointer;
 }
-.quiz button:hover:not(:disabled) { border-color: var(--sky); color: var(--sky); }
-.quiz button.right { background: rgba(124, 217, 146, 0.18); border-color: var(--green); color: var(--green); }
-.quiz button.wrong { background: rgba(255, 122, 133, 0.16); border-color: var(--coral); color: var(--coral); }
-.quiz .q.done button:not(.right):not(.wrong) { opacity: 0.35; }
+.quiz button:hover:not(:disabled), .ex .opts button:hover { border-color: var(--sky); color: var(--sky); }
+.quiz button.right, .ex .opts button.right { background: rgba(124, 217, 146, 0.18); border-color: var(--green); color: var(--green); }
+.quiz button.wrong, .ex .opts button.wrong { background: rgba(255, 122, 133, 0.16); border-color: var(--coral); color: var(--coral); }
+.quiz .q.done button:not(.right):not(.wrong), .ex .q.done button:not(.right):not(.wrong) { opacity: 0.35; }
 .quiz .score { margin-top: 1rem; font-family: var(--display); font-weight: 600; font-size: 0.875rem; color: var(--dim); }
 .quiz .score b { color: var(--amber); font-weight: 600; }
 
@@ -430,3 +430,170 @@ footer { margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--lin
   h2 { break-after: avoid; }
   pre, table, .note, .problem { break-inside: avoid; }
 }
+
+/* ============================================================
+   Interactive exercises (quiz.js)
+   ============================================================ */
+
+.ex {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.15rem 1.3rem 1.25rem;
+  margin: 0 0 1.25rem;
+  max-width: var(--measure);
+}
+.problem .ex { background: var(--code-bg); }
+
+.exprompt { margin: 0 0 0.85rem; font-size: 1rem; }
+
+.exbtn {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: var(--sky);
+  color: var(--bg);
+  border: 0;
+  border-radius: 6px;
+  padding: 0.45rem 1.1rem;
+  cursor: pointer;
+  margin-top: 0.9rem;
+}
+.exbtn:hover { background: var(--amber); }
+
+.exresult {
+  margin: 0.7rem 0 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--dim);
+  min-height: 1.4em;
+}
+.exresult.ok { color: var(--green); }
+.exresult.no { color: var(--coral); }
+
+/* fill in the blank */
+input.blank {
+  font-family: var(--mono);
+  font-variant-ligatures: none;
+  font-size: 1em;
+  background: var(--surface-2);
+  color: var(--amber);
+  border: 1px solid var(--line);
+  border-bottom: 2px solid var(--sky);
+  border-radius: 4px;
+  padding: 0.05em 0.4em;
+  margin: 0 0.15em;
+}
+input.blank:focus { outline: 2px solid var(--sky); outline-offset: 1px; }
+input.blank.right { border-bottom-color: var(--green); color: var(--green); }
+input.blank.wrong { border-bottom-color: var(--coral); color: var(--coral); }
+
+/* drag to order */
+ol.order { list-style: none; padding: 0; margin: 0; counter-reset: o; }
+ol.order li {
+  counter-increment: o;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  margin-bottom: 0.4rem;
+  cursor: grab;
+  font-family: var(--mono);
+  font-variant-ligatures: none;
+  font-size: 0.8125rem;
+}
+ol.order li::before {
+  content: counter(o);
+  font-family: var(--display);
+  font-size: 0.75rem;
+  color: var(--dim);
+  min-width: 1ch;
+}
+ol.order li.dragging { opacity: 0.5; cursor: grabbing; }
+ol.order li.right { border-left-color: var(--green); }
+ol.order li.wrong { border-left-color: var(--coral); }
+
+ol.order .grip { color: var(--dim); cursor: grab; }
+ol.order .oitem { flex: 1; white-space: pre-wrap; }
+
+ol.order .nudge { display: flex; gap: 0.2rem; }
+ol.order .nudge button {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1;
+  background: transparent;
+  color: var(--dim);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  width: 1.6rem;
+  height: 1.6rem;
+  cursor: pointer;
+}
+ol.order .nudge button:hover { color: var(--sky); border-color: var(--sky); }
+
+@media (max-width: 560px) {
+  ol.order li { font-size: 0.75rem; }
+}
+
+/* method machine (week 4) */
+.machine { border-left: 2px solid var(--line); padding-left: 1rem; }
+.machine pre { margin: 0.6rem 0; }
+.mrow { display: flex; align-items: center; gap: 0.75rem; font-family: var(--mono); font-size: 0.8125rem; }
+.mlbl {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.6875rem;
+  color: var(--dim);
+  flex: 0 0 6rem;
+}
+.mval { font-size: 1.25rem; color: var(--amber); font-variant-numeric: tabular-nums; }
+
+/* week groups on the index */
+ol.weeks { list-style: none; padding: 0; }
+ol.weeks > li { margin: 0 0 1.75rem; }
+ol.weeks .wknum {
+  display: block;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sky);
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.7rem;
+  border-bottom: 1px solid var(--line);
+}
+ol.weeks ul { list-style: none; padding: 0; margin: 0; max-width: none; }
+ol.weeks ul li { margin: 0 0 0.55rem; }
+ol.weeks .t em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--amber);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  vertical-align: 0.25em;
+  margin-left: 0.5rem;
+}
+
+/* targeted feedback under an exercise */
+.exhints { margin-top: 0.5rem; }
+.exhint {
+  margin: 0 0 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 200, 87, 0.09);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.9375rem;
+  color: var(--text);
+}
+.exhint:last-child { margin-bottom: 0; }
+.ex .q .exhint { margin-top: 0.5rem; }

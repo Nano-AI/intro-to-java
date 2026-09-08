@@ -39,13 +39,24 @@
     });
   }
 
-  // Block code. Skip transcripts, they are not Java and carry their own markup.
-  document.querySelectorAll('pre:not(.run)').forEach(function (pre) {
+  // Anything else that builds code markup (quiz.js) paints through this.
+  window.HL = { paint: paint, esc: esc };
+
+  // Repainting from textContent throws away child elements, so skip any block
+  // that owns live markup: transcripts (<b> markers) and exercises (<input>).
+  function repaintable(pre) {
+    return !pre.classList.contains('run') &&
+           !pre.closest('.ex') &&
+           !pre.querySelector('input');
+  }
+
+  document.querySelectorAll('pre').forEach(function (pre) {
+    if (!repaintable(pre)) return;
     var el = pre.querySelector('code') || pre;
     el.innerHTML = paint(el.textContent);
   });
 
-  // Inline code, unless it sits inside a transcript.
+  // Inline code, unless it sits inside a block we left alone.
   document.querySelectorAll('code').forEach(function (el) {
     if (el.closest('pre')) return;
     el.innerHTML = paint(el.textContent);

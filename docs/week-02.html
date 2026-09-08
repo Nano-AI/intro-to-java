@@ -97,6 +97,8 @@
 <p>When a number comes out <code>0.0</code> and you cannot see why, this is almost always it.</p>
 </div>
 
+<div class="ex" data-ex='{"type": "fill", "prompt": "Make each line give 2.5 instead of 2. Change one number in each.", "code": "double a = 5 / ___;\ndouble b = ___ / 2;", "answers": ["2.0", "5.0"], "traps": [{"2": "Still a whole number, so Java still does whole-number division.", "2.5": "That changes the sum. Keep it dividing by two, just make the two a decimal."}, {"5": "Still a whole number. Both sides are ints, so the decimal is thrown away.", "10": "That changes the sum. Keep the five, just make it a decimal."}], "hint": "One side has to be a decimal. Adding &lt;code&gt;.0&lt;/code&gt; is enough."}'></div>
+
 <h2 id="casting">Casting</h2>
 
 <p>Casting changes a value from one type to another. Put the type you want in brackets in front of it.</p>
@@ -144,6 +146,8 @@ public class Greeter {
 
 <p>Make the <code>Scanner</code> once, at the top of <code>main</code>. You do not need a new one for each question.</p>
 
+<div class="ex" data-ex='{"type": "order", "prompt": "Drag these into the order they have to go in.", "items": ["import java.util.Scanner;", "Scanner scanner = new Scanner(System.in);", "System.out.println(\"What is your name?\");", "String name = scanner.nextLine();", "System.out.println(\"Hello, \" + name + \"!\");"], "hint": "The import goes at the very top. You cannot read a name before you have made the Scanner, and you cannot print the name before you have read it."}'></div>
+
 <h2 id="problems">Problems</h2>
 
 <div class="problem">
@@ -164,6 +168,7 @@ public class Greeter {
 
 <div class="problem">
 <h3>2. Dog years</h3>
+<span class="usefile">DogYears.java</span>
 <p>Store a human age in an <code>int</code>, convert it to dog years, and print the result. One dog year is about seven human years.</p>
 
 <span class="lbl">Example output</span>
@@ -182,6 +187,7 @@ public class Greeter {
 
 <div class="problem">
 <h3>3. Ask first</h3>
+<span class="usefile">DogYears.java</span>
 <p>Change your dog years program so it asks the user for their age instead of having it fixed in the code.</p>
 
 <span class="lbl">Example run</span>
@@ -202,7 +208,8 @@ A 12 year old human is 84 in dog years.</code></pre>
 
 <div class="problem">
 <h3>4. Split the change</h3>
-<p>Ask for a number of sweets and a number of people. Print how many each person gets and how many are left over.</p>
+<span class="usefile">Greeter.java</span>
+<p>Start from <code>Greeter.java</code>, which already has a Scanner set up. Ask for a number of sweets and a number of people. Print how many each person gets and how many are left over.</p>
 
 <span class="lbl">Example run</span>
 <pre class="run"><code>Sweets? <b>17</b>
@@ -267,6 +274,7 @@ People? <b>5</b>
 </script>
 
 <script src="app.js" defer></script>
+<script src="quiz.js" defer></script>
 
 </body>
 </html>
