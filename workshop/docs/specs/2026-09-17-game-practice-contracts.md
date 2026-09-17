@@ -78,6 +78,15 @@ Every worker hands back: branch and base commit, changed files, the exact comman
 
 Fixture mode is development and test only. Before Phase 1 acceptance, fixture transport is replaced with the real host and both sample games run end to end from the native editor.
 
+## 4b. Additive authoring fields (Phase 1)
+
+Two optional fields joined the registry entry beyond what the design spec lists. Both are additive and validated by `games.test.js`.
+
+- **`rejects: [{ label, source }]`** — authored incorrect solutions the harness runs and requires to score 0. This is the hook for the design spec's "representative incorrect solutions fail" and "authored boundary fixtures beyond random seeds". Together with `requirements` this is the **primary** defence against a memorised answer; world variety is not.
+- **`fixed: true`** — the subtopic 1.1 exception, declared rather than keyed off an id. It is a *stricter* contract, not an escape hatch: a game declaring it must produce exactly one world across every seed **and both levels**, so setting it on a random generator fails immediately.
+
+Content authors call `world(rng, level)` with the harness-supplied `worldRng(seed, level)` from `src/games/engine.js`, not `mulberry32` directly.
+
 ## 5. Coordinator decisions made during Phase 1
 
 These resolve ambiguities the engine worker hit. They are now part of the frozen contract.

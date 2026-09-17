@@ -77,8 +77,13 @@ test('world() is deterministic per seed and level, and every world it makes is v
 // uses, because three samples cannot tell a wide range from a narrow one. This
 // is pure JavaScript, so a large sample is free.
 const SPREAD_SEEDS = 40;
-const MIN_DISTINCT_WORLDS = 10;   // a memorised answer then clears a 3-world tier well under 1% of the time
-const MAX_WORLD_SHARE = 0.4;      // and no single world may dominate a skewed draw
+const MIN_DISTINCT_WORLDS = 10;   // ~12 equally likely worlds yields ~11.6 expected distinct over 40 draws
+const MAX_WORLD_SHARE = 0.4;      // distinct count alone misses a skewed draw, so cap the modal world too
+// These are a backstop, not the target. The modal share is what decides whether
+// one memorised answer clears a 3-world tier: at the 0.4 cap that is still
+// 0.4^3 = 6%, which is why `requirements` and `rejects` are the real defence and
+// this guard only catches a generator that is obviously too narrow. The two
+// sample games sit at 0.18 and 0.13, i.e. 0.6% and 0.2%.
 // Only the parts a solution depends on. Cosmetic variation (board width, where
 // the hoop sits) does not make a second puzzle, so it must not count as spread.
 const puzzleKey = world => JSON.stringify({ data: world.data ?? null, input: world.input ?? '' });
