@@ -59,10 +59,18 @@ public class InspectSource {
                     calls.add("{\"name\":" + quote(name) + ",\"scope\":" + quote(scope) + ",\"arguments\":[" + String.join(",", arguments) + "],\"identifiers\":[" + String.join(",", argumentNames) + "]}");
                     return super.visitMethodInvocation(node, unused);
                 }
-                void loop(String kind) { loops.add("{\"kind\":" + quote(kind) + ",\"scope\":" + quote(scope) + "}"); }
-                @Override public Void visitForLoop(ForLoopTree node, Void unused) { loop("for"); return super.visitForLoop(node, unused); }
-                @Override public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void unused) { loop("for"); return super.visitEnhancedForLoop(node, unused); }
-                @Override public Void visitWhileLoop(WhileLoopTree node, Void unused) { loop("while"); return super.visitWhileLoop(node, unused); }
+                // `scope` is only the enclosing method name, so a loop inside an if
+                // inside main still reads "main" and nesting cannot be seen. Each loop
+                // therefore records its 1-based depth and the index of the loop that
+                // encloses it, or -1 at the top level.
+                final Deque<Integer> open = new ArrayDeque<>();
+                void loop(String kind) {
+                    loops.add("{\"kind\":" + quote(kind) + ",\"scope\":" + quote(scope) + ",\"depth\":" + (open.size() + 1) + ",\"parent\":" + (open.isEmpty() ? -1 : open.peek()) + "}");
+                    open.push(loops.size() - 1);
+                }
+                @Override public Void visitForLoop(ForLoopTree node, Void unused) { loop("for"); super.visitForLoop(node, unused); open.pop(); return null; }
+                @Override public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void unused) { loop("for"); super.visitEnhancedForLoop(node, unused); open.pop(); return null; }
+                @Override public Void visitWhileLoop(WhileLoopTree node, Void unused) { loop("while"); super.visitWhileLoop(node, unused); open.pop(); return null; }
                 void assignment(ExpressionTree variable) { assignments.add("{\"name\":"+quote(variable.toString())+",\"scope\":"+quote(scope)+"}"); }
                 @Override public Void visitAssignment(AssignmentTree node, Void unused) { assignment(node.getVariable()); return super.visitAssignment(node,unused); }
                 @Override public Void visitCompoundAssignment(CompoundAssignmentTree node, Void unused) { assignment(node.getVariable()); return super.visitCompoundAssignment(node,unused); }
