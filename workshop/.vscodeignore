@@ -1,0 +1,13 @@
+**/*
+!package.json
+!README.md
+!CHANGELOG.md
+!app-icon.svg
+!media/pip.svg
+!Robot.java
+!Runner.java
+!InspectSource.java
+!dist/**
+!extension-dist/extension.cjs
+!docs/**
+!media/LUCIDE-LICENSE.txt
