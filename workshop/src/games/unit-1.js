@@ -13,6 +13,10 @@ export const games = [
     subtopic: '1.1',
     title: 'Hello Arena',
     boss: false,
+    // Subtopic 1.1 uses one fixed board: world() ignores the generator and the
+    // level. Declaring it exempts the game from the world-spread check and
+    // instead requires the world to be identical on every seed and both levels.
+    fixed: true,
     // Speech only: no verb is allowed, so every printed line is something Pip
     // says out loud. `move` would be answered with "`move` is not used in this
     // game."

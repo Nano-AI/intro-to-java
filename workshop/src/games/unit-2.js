@@ -24,7 +24,7 @@ export const games = [
     ].join('\n'),
     task: 'Score exactly as many baskets as the scoreboard asks for, using a `for` loop for the shots.',
     hint: 'Ask the shopkeeper with `System.out.println("Can I have " + baskets + " balls?")`, then repeat `System.out.println("shoot")` inside `for (int i = 0; i < baskets; i++)`.',
-    inputHelp: 'One line with one whole number: the baskets to score (3 to 12).',
+    inputHelp: 'One line with one whole number: the baskets to score (4 to 31).',
     starter: [
       'import java.util.Scanner;',
       '',
@@ -59,8 +59,14 @@ export const games = [
     // Level 2 keeps the same route and the same input schema: bigger numbers,
     // plus the twist that the shop stocks exactly the balls needed, so an
     // over-order is answered with "Only N left." instead of a spare ball.
+    //
+    // The basket range is deliberately wide. A graded tier is only three worlds,
+    // so a narrow range (this drew from 3..6 at first, four possible worlds)
+    // hands the student the same puzzle twice and lets one memorised shot count
+    // clear the tier. The range is what creates variety; `requirements` and
+    // `rejects` are what actually reject a fixed answer.
     world(rng, level) {
-      const baskets = level === 2 ? 7 + Math.floor(rng() * 6) : 3 + Math.floor(rng() * 4);
+      const baskets = level === 2 ? 16 + Math.floor(rng() * 16) : 4 + Math.floor(rng() * 12);
       const hoopDistance = 1 + Math.floor(rng() * 5);
       const width = SHOP_STEPS + 2 + Math.floor(rng() * 4);
       const stock = level === 2 ? baskets : baskets + 3 + Math.floor(rng() * 5);

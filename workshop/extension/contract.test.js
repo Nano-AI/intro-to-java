@@ -146,13 +146,9 @@ test('the shared fixtures match the shapes engine and UI both consume', () => {
   assert.ok(experiment.worlds.every(world => world.passed === false));
 });
 
-test('the registry is import-safe and tolerates a partial catalogue', () => {
-  // Step 0 landed empty scaffolds, and units arrive one worktree at a time, so
-  // the invariant is self-consistency rather than emptiness. Release
-  // completeness is enforced by PIP_GAME_CATALOG=complete in games.test.js.
-  assert.deepEqual(gameIds, games.map(game => game.id));
-  assert.equal(new Set(gameIds).size, gameIds.length);
-  assert.equal(findGame('no-such-game'), null);
-  for (const id of gameIds) assert.equal(findGame(id).id, id);
+test('the step 0 scaffolds are import-safe and empty', () => {
+  assert.deepEqual(games, []);
+  assert.deepEqual(gameIds, []);
+  assert.equal(findGame('hoop-streak'), null);
   assert.deepEqual(gitLessons, []);
 });

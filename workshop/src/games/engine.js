@@ -17,12 +17,40 @@ import {
 export { mulberry32 };
 
 // The generator handed to `world(rng, level)`. Harness seeds are the small
-// integers 1..N, and mulberry32's first output for adjacent small seeds lands
-// close together, so three "different" seeds can generate the same world and a
-// memorised answer would pass every one of them. Mixing the seed and the level
-// into the state first spreads them apart, and keeps level 1 and level 2 of one
-// seed from drawing the same stream. Same seed and level, same world, always.
+// integers 1..N; this mixes the seed and the level into the state so level 1 and
+// level 2 of one seed do not draw the same stream. Same seed and level, same
+// world, always.
+//
+// This does NOT give a game world variety, and nothing here can. mulberry32's
+// draws are already well spread for adjacent small seeds (seeds 1..6 produce
+// 0.63, 0.73, 0.72, 0.92, 0.69, 0.53). How many distinct worlds exist is decided
+// entirely by the range the generator maps those draws onto.
 export const worldRng = (seed, level) => mulberry32((Math.imul(seed >>> 0, 0x9e3779b1) + Math.imul(level, 0x85ebca6b)) >>> 0);
+
+// AUTHORING NOTE — world variety, and what actually stops a memorised answer.
+//
+// Variety is the generator's job. A graded tier runs three worlds, so if
+// `world()` maps its draws onto a narrow range those three repeat:
+// `3 + Math.floor(rng() * 4)` has four possible values, and a three-seed graded
+// run then draws only two distinct worlds. Make the parameter space wide enough
+// that repeats are rare; `extension/games.test.js` measures this and fails a
+// range that is too narrow.
+//
+// But world variety is NOT the defence against a memorised answer, and must not
+// be treated as one. The design spec is explicit: "Random worlds reduce
+// memorized-answer success but cannot prove concept use." A wider range only
+// makes a fixed answer lose more often; it never proves the student wrote the
+// construct. The real defences, in order:
+//
+//   1. `requirements` — source checks over the parsed AST. A `for` loop, a
+//      genuinely nested loop, a helper that is actually called, a constant of
+//      the declared type. This is evidence about the program itself.
+//   2. `rejects` — authored wrong solutions the harness runs and requires to
+//      score zero: fixed outputs, empty or dead constructs, off-by-one goals,
+//      wrong recipients.
+//
+// Every construct-focused game needs both. A game whose only defence is a random
+// world is not graded, it is gambling.
 
 const STEP = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] };
 const LEFT = { N: 'W', W: 'S', S: 'E', E: 'N' };

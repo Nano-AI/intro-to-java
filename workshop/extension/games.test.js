@@ -71,6 +71,49 @@ test('world() is deterministic per seed and level, and every world it makes is v
   }
 });
 
+// A graded tier runs three worlds, so a generator that maps its draws onto a
+// narrow range hands the student the same puzzle two or three times and one
+// memorised answer clears the tier. Measured over more seeds than a graded run
+// uses, because three samples cannot tell a wide range from a narrow one. This
+// is pure JavaScript, so a large sample is free.
+const SPREAD_SEEDS = 40;
+const MIN_DISTINCT_WORLDS = 10;   // a memorised answer then clears a 3-world tier well under 1% of the time
+const MAX_WORLD_SHARE = 0.4;      // and no single world may dominate a skewed draw
+// Only the parts a solution depends on. Cosmetic variation (board width, where
+// the hoop sits) does not make a second puzzle, so it must not count as spread.
+const puzzleKey = world => JSON.stringify({ data: world.data ?? null, input: world.input ?? '' });
+
+test('generators produce enough distinct worlds that one memorised answer cannot clear a tier', () => {
+  const sample = seedsFor(Math.max(SPREAD_SEEDS, seeds.length));
+  for (const game of selected) {
+    const everyLevel = [];
+    for (const level of game.project ? [1] : [1, 2]) {
+      const keys = sample.map(seed => puzzleKey(game.world(worldRng(seed, level), level)));
+      everyLevel.push(...keys);
+      const counts = new Map();
+      for (const key of keys) counts.set(key, (counts.get(key) || 0) + 1);
+      const where = `${label(game)} level ${level}`;
+      // Subtopic 1.1 fixed worlds are exempt by design. The flag is a stricter
+      // contract rather than an escape hatch: declaring it means the world
+      // really must be the same every time, on every seed and both levels.
+      if (game.fixed) {
+        assert.equal(counts.size, 1, `${where} declares fixed worlds but generated ${counts.size} of them`);
+        continue;
+      }
+      const graded = new Set(seeds.map(seed => puzzleKey(game.world(worldRng(seed, level), level)))).size;
+      assert.ok(
+        counts.size >= MIN_DISTINCT_WORLDS,
+        `${where} generated only ${counts.size} distinct worlds across ${sample.length} seeds (need ${MIN_DISTINCT_WORLDS}); a graded run drew ${graded} distinct of ${seeds.length}. Widen the range world() draws from.`,
+      );
+      assert.ok(
+        Math.max(...counts.values()) <= MAX_WORLD_SHARE * sample.length,
+        `${where} returned one world ${Math.max(...counts.values())} times in ${sample.length} seeds; no single world may exceed ${MAX_WORLD_SHARE * 100}% of the draw.`,
+      );
+    }
+    if (game.fixed) assert.equal(new Set(everyLevel).size, 1, `${label(game)} declares fixed worlds, so both levels must be the same world`);
+  }
+});
+
 test('the reference solution earns every star and the starter earns none', async () => {
   for (const game of selected) {
     const solved = await play(game, game.solution);
