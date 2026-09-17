@@ -11,6 +11,33 @@ export function replaceInputs(source, analysis, inputs) {
   for (const edit of edits) source = source.slice(0,edit.start) + edit.text + source.slice(edit.end);
   return source;
 }
+const javaType = value => Number.isInteger(value) ? 'int' : typeof value === 'number' ? 'double' : typeof value === 'string' ? 'String' : typeof value === 'boolean' ? 'boolean' : null;
+// `replaceInputs` throws rather than failing a check when a name does not
+// resolve to exactly one initialised variable, so a world's `constants` are
+// verified for name, scope, finality, and declared type before replacement.
+export function constantProblem(analysis, constants) {
+  for (const [name, value] of Object.entries(constants || {})) {
+    const type = javaType(value);
+    if (!type) return `${name} must be a number, string, or boolean.`;
+    const found = (analysis.variables || []).filter(v => v.scope === 'class' && v.name === name && v.final && v.start >= 0);
+    if (found.length !== 1) return `Declare \`public static final ${type} ${name}\` once, with a starting value, outside \`main\`.`;
+    if (found[0].type.replace(/^java\.lang\./, '') !== type) return `Declare \`${name}\` as \`${type}\`.`;
+  }
+  return null;
+}
+// Longest chain of `kind` loops nested directly inside one another. A flat loop
+// list cannot show this, which is why InspectSource now reports each loop's
+// parent index (contracts doc section 3, "Nesting cannot be proved today").
+const nestedRun = (loops, kind, scope) => {
+  let deepest = 0;
+  for (const loop of loops) {
+    if (loop.kind !== kind || (scope && loop.scope !== scope)) continue;
+    let run = 1, parent = loop.parent;
+    while (parent >= 0 && loops[parent]?.kind === kind && (!scope || loops[parent].scope === scope)) { run++; parent = loops[parent].parent; }
+    deepest = Math.max(deepest, run);
+  }
+  return deepest;
+};
 export function checkStructure(lesson, analysis) {
   const checks = [], rules = lesson.requirements || {};
   for (const [name, type] of Object.entries(rules.variables || {})) {
@@ -22,7 +49,13 @@ export function checkStructure(lesson, analysis) {
   for (const name of rules.uses || []) checks.push({ passed: (analysis.identifiers[name] || 0) > 0, message: `Use \`${name}\` in your calculation.` });
   for (const name of rules.unchanged || []) checks.push({passed:!analysis.assignments.some(a=>a.scope==='main'&&a.name===name),message:`Leave the original \`${name}\` value unchanged; store the result in the new variable.`});
   for (const [kind, minimum] of Object.entries(rules.loops || {})) checks.push({ passed: analysis.loops.filter(l=>l.kind===kind && l.scope===(rules.scope || 'main')).length>=minimum, message: `Use ${minimum > 1 ? `${minimum} nested or separate ${kind} loops` : `a ${kind} loop`} in ${rules.scope || 'main'}.` });
-  for (const method of rules.methods || []) checks.push({ passed: analysis.methods.some(m => m.name === method.name && m.returns === method.returns && JSON.stringify(m.parameters) === JSON.stringify(method.parameters)), message: `Define \`${method.returns} ${method.name}(${method.parameters.join(', ')})\`.` });
+  for (const [kind, minimum] of Object.entries(rules.nested || {})) checks.push({ passed: nestedRun(analysis.loops || [], kind, rules.scope) >= minimum, message: `Put ${minimum} ${kind} loops inside one another in ${rules.scope || 'this program'}; separate loops do not count.` });
+  for (const method of rules.methods || []) {
+    checks.push({ passed: analysis.methods.some(m => m.name === method.name && m.returns === method.returns && JSON.stringify(m.parameters) === JSON.stringify(method.parameters)), message: `Define \`${method.returns} ${method.name}(${method.parameters.join(', ')})\`.` });
+    // A declared helper can sit unused, so a required signature is paired with
+    // a call from somewhere other than the helper itself.
+    if (method.used) checks.push({ passed: analysis.calls.some(c => (c.name === method.name || c.name.endsWith('.' + method.name)) && c.scope !== method.name), message: `Call \`${method.name}\` from \`main\` instead of only defining it.` });
+  }
   for (const name of rules.calls || []) checks.push({ passed: analysis.calls.some(c => c.name === name || c.name.endsWith('.'+name)), message: `Use \`${name}\` in this exercise.` });
   if (rules.alias) checks.push({ passed: analysis.variables.some(v=>v.name===rules.alias[0]&&v.initializer===rules.alias[1]), message: `Make \`${rules.alias[0]}\` refer to \`${rules.alias[1]}\`, rather than creating another array.` });
   return checks;

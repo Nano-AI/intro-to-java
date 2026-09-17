@@ -1,8 +1,14 @@
 import { spawn } from 'node:child_process';
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 import os from 'node:os';
-import { assessmentCases, checkStructure, replaceInputs } from './assessment.js';
+import { assessmentCases, checkStructure, constantProblem, replaceInputs } from './assessment.js';
+import { gradeWorlds, simulate, worldRng } from '../src/games/engine.js';
+import {
+  DEFAULT_SEEDS, LIMITS, ROBOT_REPLIES, RUN_MODES,
+  gameResult, validateWorld, worldResult,
+} from '../shared/game-contract.js';
 
 export function runProcess(command, args, { cwd, input = '', signal, timeout = 12000, maxOutput = 65536 } = {}) {
   return new Promise((resolve, reject) => {
@@ -127,4 +133,143 @@ export async function runLesson({ lesson, source, jdk, resourceRoot, cacheRoot =
     }
     return { kind: 'robot', trials, output, passed: trials.every(t => t.passed), diagnostics,sourceChecks, frameStep: 1 / 60, controlHz };
   } finally { await rm(dir, { recursive: true, force: true }); }
+}
+
+// ---------------------------------------------------------------- games
+
+// Concept lessons have no Java at all. Every path that could create or compile
+// a file routes through here, so the guard lives in one place.
+export const CODING_KINDS = ['console', 'robot'];
+export function assertCoding(lesson) {
+  if (!CODING_KINDS.includes(lesson?.kind)) throw new Error('This is a concept lesson. It has no Java file: open Learn or the prediction quiz instead.');
+  return lesson;
+}
+
+export const freshSeeds = (count = DEFAULT_SEEDS) => Array.from({ length: count }, () => randomBytes(4).readUInt32LE());
+
+// The save-and-run sequence for one game (design spec section 2, "Save & run
+// for a game"). Compilation, source checks, a nonzero exit, a timeout, an
+// output overflow, and a simulator or authoring error all return a `stage` and
+// can never report a passing world from partial output.
+export async function runGame({
+  game, source, jdk, resourceRoot, cacheRoot = path.join(os.tmpdir(), 'pip-workshop-runs'),
+  signal, seeds, mode = RUN_MODES.graded, customInput, runId = null, onWorld,
+}) {
+  if (typeof source !== 'string' || source.length > LIMITS.sourceChars) throw new Error('Program is too large (40,000 characters maximum).');
+  if (!Object.values(RUN_MODES).includes(mode)) throw new Error('Unsupported run mode.');
+  const custom = mode === RUN_MODES.custom;
+  if (custom && typeof customInput !== 'string') throw new Error('Custom input must be text.');
+  const seedList = seeds?.length ? seeds : freshSeeds();
+  const worlds = [];
+  let diagnostics = [], sourceChecks = [], compiles = 0;
+  const done = extra => ({
+    ...gameResult({ gameId: game.id, runId, mode, earnedStars: custom ? null : 0, sourceChecks, diagnostics, worlds, ...extra }),
+    best: null, compiles,
+  });
+  const cancelled = () => Boolean(signal?.aborted);
+
+  await mkdir(cacheRoot, { recursive: true });
+  const dir = await mkdtemp(path.join(cacheRoot, 'game-'));
+  try {
+    const namespace = source.match(/^\s*package\s+([\w.]+)\s*;/m)?.[1];
+    const entry = namespace ? `${namespace}.Student` : 'Student';
+    await writeFile(path.join(dir, 'Student.java'), source);
+    await writeFile(path.join(dir, 'InspectSource.java'), await readFile(path.join(resourceRoot, 'InspectSource.java')));
+    const inspectionClasspath = [dir, jdk.home !== 'PATH' ? path.join(jdk.home, 'lib/tools.jar') : ''].filter(Boolean).join(path.delimiter);
+    const compiled = await runProcess(jdk.javac, ['-J-Duser.language=en', '-proc:none', '-Xlint:all,-path', '-encoding', 'UTF-8', '-cp', inspectionClasspath, '-d', dir, 'Student.java', 'InspectSource.java'], { cwd: dir, signal });
+    compiles += 1;
+    diagnostics = parseDiagnostics(compiled.stderr);
+    if (cancelled()) return done({ stage: 'runtime', error: 'Run cancelled.' });
+    if (compiled.code !== 0) return done({ stage: 'compile', error: compiled.error || compiled.stdout });
+
+    const inspectionFile = path.join(dir, 'inspection.json');
+    const inspected = await runProcess(jdk.java, ['-Xmx64m', '-cp', inspectionClasspath, 'InspectSource', path.join(dir, 'Student.java'), inspectionFile], { cwd: dir, signal });
+    if (cancelled()) return done({ stage: 'runtime', error: 'Run cancelled.' });
+    if (inspected.code !== 0) return done({ stage: 'checks', error: 'The Java source checker could not run. Configure a full JDK in Pip settings.\n' + inspected.error });
+    const analysis = JSON.parse(await readFile(inspectionFile, 'utf8'));
+    sourceChecks = checkStructure(game, analysis);
+    // An input experiment is exploration, so it is never blocked by a check.
+    if (!custom && sourceChecks.some(check => !check.passed)) {
+      return done({ stage: 'checks', error: sourceChecks.filter(check => !check.passed).map(check => check.message).join('\n') });
+    }
+
+    // One compiled program per distinct set of constants, reused inside the
+    // run. A variant that fails to compile never falls back to stale bytecode.
+    const variants = new Map();
+    const classpathFor = async constants => {
+      if (!constants) return dir;
+      const cacheKey = JSON.stringify(constants);
+      if (!variants.has(cacheKey)) {
+        const problem = constantProblem(analysis, constants);
+        if (problem) variants.set(cacheKey, { error: problem });
+        else {
+          const out = path.join(dir, `variant-${variants.size + 1}`);
+          await mkdir(out, { recursive: true });
+          await writeFile(path.join(out, 'Student.java'), replaceInputs(source, analysis, constants));
+          const build = await runProcess(jdk.javac, ['-proc:none', '-encoding', 'UTF-8', '-cp', out, '-d', out, 'Student.java'], { cwd: out, signal });
+          compiles += 1;
+          variants.set(cacheKey, build.code === 0 ? { classpath: out } : { error: build.error || 'This changed starting data no longer compiles.' });
+        }
+      }
+      const variant = variants.get(cacheKey);
+      if (variant.error) throw new Error(variant.error);
+      return variant.classpath;
+    };
+
+    const play = async (level, seed) => {
+      let world;
+      try { world = structuredClone(game.world(worldRng(seed, level), level)); }
+      catch (error) { throw new Error(`${game.id}: world(seed ${seed}, level ${level}) failed: ${error.message}`); }
+      const problems = validateWorld(world, { id: `${game.id} level ${level} seed ${seed}` });
+      if (problems.length) throw new Error(problems.join('\n'));
+      const classpath = await classpathFor(world.constants);
+      const input = custom ? customInput : world.input ?? '';
+      const ran = await runProcess(jdk.java, ['-Xmx64m', '-Duser.language=en', '-Dfile.encoding=UTF-8', '-cp', classpath, entry], { cwd: dir, input, signal });
+      if (ran.code !== 0) return { runtime: ran.error || 'Program exited unsuccessfully.' };
+      const { events, end } = simulate(world, ran.stdout, game);
+      const outcome = custom ? { passed: false, message: 'Input experiment. Nothing was graded.' } : judge(game, end, world);
+      const entryResult = worldResult({ level, seed, world, events, end, passed: outcome.passed, message: outcome.message });
+      worlds.push(entryResult);
+      onWorld?.(entryResult);
+      return {};
+    };
+
+    if (custom) {
+      const seed = seedList[0];
+      let generatedInput = '';
+      try {
+        const world = structuredClone(game.world(worldRng(seed, 1), 1));
+        generatedInput = world.input ?? '';
+        const failure = await play(1, seed);
+        if (failure.runtime) return { ...done({ stage: 'runtime', error: failure.runtime }), input: customInput, generatedInput };
+      } catch (error) {
+        return { ...done({ stage: cancelled() ? 'runtime' : 'simulate', error: cancelled() ? 'Run cancelled.' : error.message }), input: customInput, generatedInput };
+      }
+      return { ...done({}), input: customInput, generatedInput };
+    }
+
+    // Level 2 is skipped when level 1 fails; projects never run it at all.
+    for (const level of game.project ? [1] : [1, 2]) {
+      for (const seed of seedList) {
+        if (cancelled()) return done({ stage: 'runtime', error: 'Run cancelled.' });
+        let failure;
+        try { failure = await play(level, seed); }
+        catch (error) { return done({ stage: cancelled() ? 'runtime' : 'simulate', error: cancelled() ? 'Run cancelled.' : error.message }); }
+        if (failure.runtime) return done({ stage: 'runtime', error: failure.runtime });
+      }
+      if (!worlds.filter(world => world.level === level).every(world => world.passed)) break;
+    }
+    const { stars, best } = gradeWorlds(worlds, { project: Boolean(game.project) });
+    return { ...done({ earnedStars: stars }), best };
+  } finally { await rm(dir, { recursive: true, force: true }); }
+}
+
+// A bump or the action limit fails the world before the goal is consulted.
+function judge(game, end, world) {
+  if (end.bumped) return { passed: false, message: `${ROBOT_REPLIES.bump}. Pip stopped there.` };
+  if (end.limited) return { passed: false, message: ROBOT_REPLIES.limit };
+  let verdict;
+  try { verdict = game.goal(end, structuredClone(world)); }
+  catch (error) { throw new Error(`${game.id}: goal() failed: ${error.message}`); }
+  return { passed: verdict?.passed === true, message: verdict?.message || (verdict?.passed === true ? 'Solved.' : 'Not solved yet.') };
 }
