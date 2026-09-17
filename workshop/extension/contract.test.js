@@ -146,9 +146,30 @@ test('the shared fixtures match the shapes engine and UI both consume', () => {
   assert.ok(experiment.worlds.every(world => world.passed === false));
 });
 
-test('the step 0 scaffolds are import-safe and empty', () => {
-  assert.deepEqual(games, []);
-  assert.deepEqual(gameIds, []);
-  assert.equal(findGame('hoop-streak'), null);
-  assert.deepEqual(gitLessons, []);
+// Holds at every stage of the build: empty scaffolds, a partial catalogue during
+// Phase 2, and the complete release. Completeness itself is games.test.js's job
+// under PIP_GAME_CATALOG=complete, because a partial registry is expected here.
+test('the registries stay import-safe and internally consistent', () => {
+  assert.ok(Array.isArray(games) && Array.isArray(gitLessons));
+  assert.deepEqual(gameIds, games.map(game => game.id));
+  assert.equal(new Set(gameIds).size, gameIds.length, 'game ids are unique');
+  for (const game of games) {
+    assert.deepEqual(validateGame(game), [], `${game.id} matches the frozen schema`);
+    assert.equal(findGame(game.id), game);
+  }
+  assert.equal(findGame('no-such-game'), null);
+
+  const conceptIds = gitLessons.map(lesson => lesson.id);
+  assert.equal(new Set(conceptIds).size, conceptIds.length, 'concept ids are unique');
+  for (const lesson of gitLessons) {
+    assert.equal(lesson.kind, 'concept', `${lesson.id} must be kind 'concept'`);
+    assert.ok(Number.isInteger(lesson.assessmentVersion) && lesson.assessmentVersion > 0);
+  }
+  // Games, concepts, and coding lessons share one progress id space.
+  assert.deepEqual(conceptIds.filter(id => gameIds.includes(id)), [], 'no concept id collides with a game id');
+
+  if (process.env.PIP_GAME_CATALOG === 'complete') {
+    assert.equal(games.length, CATALOG_ENTRY_COUNT);
+    assert.equal(gitLessons.length, 8);
+  }
 });
