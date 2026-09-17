@@ -65,7 +65,14 @@ export const EVENT_KINDS = [
 ];
 
 export const BUMP_REASONS = ['wall', 'edge', 'character', 'hurdle', 'gate'];
-export const RUN_STAGES = ['compile', 'checks', 'runtime', 'simulate'];
+
+// `setup` covers no workspace, an untrusted workspace, a missing JDK, and a
+// failed save. Those are not the student's program failing, and rendering them
+// as `runtime` is the mislabelling the contracts doc calls out. `simulate` is an
+// engine fault. Neither is ever the student's fault; both are reported as engine
+// errors, separately from a failed world.
+export const RUN_STAGES = ['setup', 'compile', 'checks', 'runtime', 'simulate'];
+export const ENGINE_STAGES = ['setup', 'simulate'];
 
 // Robot speech the simulator emits itself. These are transcript lines, never
 // student actions, and never satisfy a goal that checks `end.said`.
@@ -116,6 +123,18 @@ export const GAME_REQUESTS = {
 // `game.run` distinguishes the two modes explicitly rather than by the presence
 // of an `input` key, so a graded run can never be mistaken for an experiment.
 export const RUN_MODES = { graded: 'graded', custom: 'custom' };
+
+// Host -> webview broadcasts for games. `run.started` / `run.finished` are the
+// existing lesson events, reused with `gameId` alongside `lessonId`.
+// `run.progress` is new: a graded run simulates up to six worlds and each Java
+// child gets its own 12 s budget, so the whole run far exceeds any single
+// process limit and the student needs per-world feedback while it happens.
+// Payload: { gameId, runId, world } where `world` is one `worldResult`.
+export const GAME_EVENTS = {
+  started: 'run.started',
+  progress: 'run.progress',
+  finished: 'run.finished',
+};
 
 export const gameRoute = id => `/game/${id}`;
 export const unitRoute = id => `/unit/${id}`;

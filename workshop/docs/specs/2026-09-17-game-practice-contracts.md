@@ -78,6 +78,17 @@ Every worker hands back: branch and base commit, changed files, the exact comman
 
 Fixture mode is development and test only. Before Phase 1 acceptance, fixture transport is replaced with the real host and both sample games run end to end from the native editor.
 
-## 5. Open product decisions
+## 5. Coordinator decisions made during Phase 1
+
+These resolve ambiguities the engine worker hit. They are now part of the frozen contract.
+
+- **`setup` is its own run stage.** No workspace, untrusted workspace, missing JDK and failed save report `stage: 'setup'`, not `'runtime'`. `ENGINE_STAGES` names the two stages that are never the student's fault. This closes the mislabelling recorded in section 3.
+- **`run.progress` is a frozen broadcast**, payload `{ gameId, runId, world }` with one `worldResult`. A graded run simulates up to six worlds, each Java child gets its own 12 s budget, so the run as a whole far outlasts any single process limit and the student needs per-world feedback while it runs.
+- **Activation adds `workspaceContains:src/pip/**`.** Without it, `ctrl/cmd+enter` on a game file does nothing in a cold window until the Pip sidebar is opened.
+- **A jump into a wall ends the run**, exactly like a move bump. The design spec spells the run-end rule out for `move` and says only that a jump "still causes a bump"; treating a jump bump as survivable would let a student probe walls for free.
+- **No `pip.openGame` command.** `game.open` over the existing RPC already opens games; nothing needs a command-palette entry yet.
+- **World variety is the generator's responsibility, not the RNG's.** `mulberry32` on adjacent small seeds is well behaved — seeds 1..3 give 0.627, 0.734, 0.720. What produces repeated worlds is a generator mapping a good draw onto a narrow range: a `3..6` parameter yields only four possible worlds, so a 3-seed graded run frequently repeats one. Authors widen the parameter space; `games.test.js` carries a spread guard so a too-narrow range fails at test time. Anti-memorisation does **not** rest on world variety — per the design spec it "cannot prove concept use". The real defences are `requirements` and authored `rejects`.
+
+## 6. Open product decisions
 
 Design spec section 6 items 1–3 (existing arena access, Git in course completion, the skin catalogue) are **unconfirmed**. Work proceeds against the documented proposed defaults; the settings and completion UI that depends on them is not final until the user confirms.

@@ -12,7 +12,7 @@
   "extensionKind": ["workspace"],
   "extensionDependencies": ["redhat.java"],
   "categories": ["Education", "Programming Languages"],
-  "activationEvents": ["onView:pip.launcher"],
+  "activationEvents": ["onView:pip.launcher", "workspaceContains:src/pip/**"],
   "capabilities": { "untrustedWorkspaces": { "supported": "limited", "description": "Course pages are available; creating or running Java requires a trusted learning workspace." }, "virtualWorkspaces": false },
   "contributes": {
     "commands": [
