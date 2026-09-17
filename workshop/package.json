@@ -29,10 +29,10 @@
     "views": { "pip": [{ "id": "pip.launcher", "name": "Java foundations" }] },
     "viewsWelcome": [{ "view": "pip.launcher", "contents": "Learn Java through short exercises and robot labs.\n[Open course](command:pip.openCourse)\n[View progress](command:pip.openProgress)\n[Java setup and settings](command:pip.openSettings)\n\nOpen a learning folder before starting a lesson." }],
     "menus": {
-      "editor/title": [{ "command": "pip.runLesson", "when": "resourceFilename == Student.java && resourcePath =~ /\\/pip\\/lessons\\//", "group": "navigation" }],
+      "editor/title": [{ "command": "pip.runLesson", "when": "resourceFilename == Student.java && resourcePath =~ /\\/pip\\/(lessons|games)\\//", "group": "navigation" }],
       "commandPalette": [{ "command": "pip.openLesson", "when": "false" }]
     },
-    "keybindings": [{ "command": "pip.runLesson", "key": "ctrl+enter", "mac": "cmd+enter", "when": "editorTextFocus && resourceFilename == Student.java && resourcePath =~ /\\/pip\\/lessons\\//" }],
+    "keybindings": [{ "command": "pip.runLesson", "key": "ctrl+enter", "mac": "cmd+enter", "when": "editorTextFocus && resourceFilename == Student.java && resourcePath =~ /\\/pip\\/(lessons|games)\\//" }],
     "configuration": { "title": "Pip Workshop", "properties": { "pip.javaHome": { "type": "string", "default": "", "scope": "machine", "description": "Path to a JDK home containing bin/java and bin/javac. If empty, Pip checks Java runtime settings, JAVA_HOME, macOS java_home, then PATH." } } }
   },
   "scripts": {
