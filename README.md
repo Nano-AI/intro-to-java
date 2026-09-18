@@ -64,7 +64,7 @@ make-zips.py          rebuilds the earlier website's starter archives
 
 ## Earlier static course website
 
-The original site remains at https://nano-ai.github.io/intro-to-java/. Its week 0–4 pages cover setup, variables, arithmetic/input, conditionals, and methods. These are supplementary material; they have not been converted into the extension UI.
+The site at https://nano-ai.github.io/intro-to-java/ now serves `docs/index.html` as a promotional landing page for the Pip Workshop VS Code extension, with the packaged `.vsix` download under `docs/downloads/`. The original week 0–4 pages remain as earlier notes, linked from that landing page's "Earlier weekly notes" section; they have not been converted into the extension UI. After packaging a new Pip Workshop version, copy the new `.vsix` into `docs/downloads/` and update the download link on `docs/index.html`.
 
 The `docs/` website still has no build dependencies and is served through GitHub Pages from `master` → `/docs`. After changing files in `docs/starters/`, rebuild the downloads from the repository root:
 

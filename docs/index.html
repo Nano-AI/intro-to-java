@@ -3,102 +3,84 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Intro to Java</title>
-<meta name="description" content="A beginner Java course in weekly assignments, with starter files to download and open in jGRASP.">
-<link rel="stylesheet" href="style.css">
+<title>Pip Workshop</title>
+<meta name="description" content="Pip Workshop: a VS Code extension for learning beginner Java with lessons, quizzes, real code, and a robot simulator.">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="landing.css">
 </head>
 <body>
+<div class="wrap">
 
-<a class="skip" href="#main">Skip to the weeks</a>
+<header class="hero">
+  <p class="kicker">VS Code extension &middot; free</p>
+  <h1>Pip Workshop</h1>
+  <p class="pitch">Learn beginner Java inside VS Code: a short lesson, a prediction quiz, then real code in a real Java file, checked automatically and run to see the result.</p>
+  <a class="btn" href="downloads/pip-workshop-0.6.0.vsix">Download Pip Workshop 0.6.0 (.vsix)</a>
+  <p class="btn-sub">348 KB &middot; local VSIX install, no Marketplace listing yet</p>
+</header>
 
-<div class="shell">
+<section id="install">
+  <h2>Install</h2>
+  <ol class="steps">
+    <li>Install VS Code 1.96 or newer.</li>
+    <li>Install the <strong>Language Support for Java by Red Hat</strong> extension, and have a JDK available (a free build such as Eclipse Temurin works; Java 21 is recommended).</li>
+    <li>Download the VSIX above, then in VS Code open <strong>Extensions &rarr; &hellip; &rarr; Install from VSIX</strong> and choose the downloaded file.</li>
+    <li>Open a learning folder and run <strong>Pip: Open Course</strong> from the Command Palette.</li>
+  </ol>
+</section>
 
-<div class="masthead">
-  <a class="home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>Intro to Java</a>
-  <span class="where">start at week 0</span>
-</div>
+<section id="inside">
+  <h2>What's inside</h2>
+  <ul class="loop">
+    <li>Lesson (interactive model)</li>
+    <li>Quiz (prediction)</li>
+    <li>Code in <code>Student.java</code></li>
+    <li>Save &amp; run</li>
+  </ul>
+  <p>Each unit runs that loop in a real Java editor with automated checks, plain-language error notes, and output graphics or a 3D robot replay. Three robot projects close out the course: an obstacle detour, a cargo delivery, and a hoop shot. 35 learning units, 39 coding parts (30 console, 9 robot), across six modules:</p>
+  <ul class="modules">
+    <li>Start with Java</li>
+    <li>Make work repeat</li>
+    <li>Build reusable actions</li>
+    <li>Respond to the world</li>
+    <li>Work with collections of data</li>
+    <li>Put it all together</li>
+  </ul>
 
-<main id="main">
+  <div class="shots">
+    <figure class="lead">
+      <img src="img/vscode-hoop.jpg" alt="Robot hoop-shot project: Java code on the left, a 3D simulator on the right showing the robot after scoring a shot.">
+      <figcaption>Robot hoop shot, replayed in the 3D simulator.</figcaption>
+    </figure>
+    <figure>
+      <img src="img/vscode-course.jpg" alt="Pip's course panel open beside the VS Code editor, showing the learning path split into modules with progress on each one.">
+      <figcaption>Course panel next to a real Java editor tab.</figcaption>
+    </figure>
+    <figure>
+      <img src="img/vscode-multipart.jpg" alt="A five-part declaration repair unit with four parts already struck through and the program output showing all cases passed.">
+      <figcaption>A multi-part debugging unit, checked and passing.</figcaption>
+    </figure>
+  </div>
+</section>
 
-<h1>Intro to Java</h1>
-<p class="lede">Each week has a page to read, a zip to download, and problems with hints when stuck.</p>
-
-<ol class="weeks">
-  <li>
-    <span class="wknum">Week 0</span>
-    <ul>
-      <li><a href="week-00.html">
-        <span class="t">Running the first program</span>
-        <span class="d">Open a file in jGRASP, compile it, run it, and read an error message.</span>
-      </a></li>
-    </ul>
-  </li>
-
-  <li>
-    <span class="wknum">Week 1</span>
-    <ul>
-      <li><a href="week-01.html">
-        <span class="t">Variables and types</span>
-        <span class="d">Boxes that hold values. String, int, double, boolean, char.</span>
-      </a></li>
-    </ul>
-  </li>
-
-  <li>
-    <span class="wknum">Week 2</span>
-    <ul>
-      <li><a href="week-02.html">
-        <span class="t">Maths and user input</span>
-        <span class="d">Operators, casting, the division trap, and asking questions with Scanner.</span>
-      </a></li>
-    </ul>
-  </li>
-
-  <li>
-    <span class="wknum">Week 3</span>
-    <ul>
-      <li><a href="week-03.html">
-        <span class="t">Conditionals</span>
-        <span class="d">if / else if / else. Predict output, fix three bugs that compile fine, then write five programs.</span>
-      </a></li>
-      <li><a href="battle-sim.html">
-        <span class="t">Battle Sim <em>project</em></span>
-        <span class="d">Two fighters, two score formulas, one winner. Do this after the problems above.</span>
-      </a></li>
-    </ul>
-  </li>
-
-  <li>
-    <span class="wknum">Week 4</span>
-    <ul>
-      <li><a href="week-04.html">
-        <span class="t">Methods</span>
-        <span class="d">Write something once and use it anywhere. Parameters and return values.</span>
-      </a></li>
-    </ul>
-  </li>
-</ol>
-
-<h2>How to work</h2>
-
-<ol>
-  <li>Download the week's zip and unzip it.</li>
-  <li>Open a file in jGRASP, then <b>Build &rarr; Compile</b> and <b>Build &rarr; Run</b>.</li>
-  <li>Get one piece working and run it before adding the next. Do not write the whole thing and then compile.</li>
-  <li>Try a problem before opening its hints.</li>
-</ol>
-
-<p>Never used jGRASP? <a href="week-00.html">Week 0</a> walks through it.</p>
+<section class="earlier">
+  <h2>Earlier weekly notes</h2>
+  <p>Before Pip Workshop, this site hosted weekly Java notes with downloadable starter zips. Those pages remain available:</p>
+  <ul>
+    <li><a href="week-00.html">Week 0 &mdash; Running the first program</a></li>
+    <li><a href="week-01.html">Week 1 &mdash; Variables and types</a></li>
+    <li><a href="week-02.html">Week 2 &mdash; Maths and user input</a></li>
+    <li><a href="week-03.html">Week 3 &mdash; Conditionals</a></li>
+    <li><a href="week-04.html">Week 4 &mdash; Methods</a></li>
+    <li><a href="battle-sim.html">Battle Sim &mdash; project</a></li>
+  </ul>
+</section>
 
 <footer>
-  <p>Course order follows <a href="https://courses.cs.washington.edu/courses/cse142/22sp/handouts.shtml">UW CSE 142</a>. Battle Sim is adapted from that course's assignment 4.</p>
+  <p>Pip Workshop is scoped to <a href="https://courses.cs.washington.edu/courses/cse121/26sp/">UW CSE 121, Spring 2026</a> topics. It is an original tutoring adaptation, not an official UW course or a UW product.</p>
+  <p>Source and release notes: <a href="https://github.com/Nano-AI/intro-to-java">github.com/Nano-AI/intro-to-java</a></p>
 </footer>
 
-</main>
 </div>
-
-<script src="app.js" defer></script>
-
 </body>
 </html>
