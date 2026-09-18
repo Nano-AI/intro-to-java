@@ -91,14 +91,14 @@
 
 <div class="note warn">
 <span class="h">Why this matters</span>
-<p>When a number comes out <code>0.0</code> and you cannot see why, this is almost always it.</p>
+<p>When a number comes out <code>0.0</code> and the reason isn't clear, this is almost always it.</p>
 </div>
 
 <div class="ex" data-ex='{"type": "fill", "prompt": "Make each line give 2.5 instead of 2. Change one number in each.", "code": "double a = 5 / ___;\ndouble b = ___ / 2;", "answers": ["2.0", "5.0"], "traps": [{"2": "Still a whole number, so Java still does whole-number division.", "2.5": "That changes the sum. Keep it dividing by two, just make the two a decimal."}, {"5": "Still a whole number. Both sides are ints, so the decimal is thrown away.", "10": "That changes the sum. Keep the five, just make it a decimal."}], "hint": "One side has to be a decimal. Adding &lt;code&gt;.0&lt;/code&gt; is enough."}'></div>
 
 <h2 id="casting">Casting</h2>
 
-<p>Casting changes a value from one type to another. Put the type you want in brackets in front of it.</p>
+<p>Casting changes a value from one type to another. Put the desired type in brackets in front of it.</p>
 
 <pre><code>(<span class="k">int</span>) 3.4      <span class="c">// 3</span>
 (<span class="k">int</span>) 3.9      <span class="c">// 3, not 4</span>
@@ -141,7 +141,7 @@ public class Greeter {
 </table>
 </div>
 
-<p>Make the <code>Scanner</code> once, at the top of <code>main</code>. You do not need a new one for each question.</p>
+<p>Make the <code>Scanner</code> once, at the top of <code>main</code>. A new one is not needed for each question.</p>
 
 <div class="ex" data-ex='{"type": "order", "prompt": "Drag these into the order they have to go in.", "items": ["import java.util.Scanner;", "Scanner scanner = new Scanner(System.in);", "System.out.println(\"What is your name?\");", "String name = scanner.nextLine();", "System.out.println(\"Hello, \" + name + \"!\");"], "hint": "The import goes at the very top. You cannot read a name before you have made the Scanner, and you cannot print the name before you have read it."}'></div>
 
@@ -149,7 +149,7 @@ public class Greeter {
 
 <div class="problem">
 <h3>1. Work them out on paper</h3>
-<p>Write your answer for each, then run them and check.</p>
+<p>Write the answer for each, then run them and check.</p>
 
 <pre><code>5 / 2            2.5 * 2
 5 / 2.0          (int) (2.5 * 3)
@@ -173,7 +173,7 @@ public class Greeter {
 
 <details>
 <summary>Hint 1</summary>
-<p>You need two variables: one for the human age, one for the dog age. The second is worked out from the first.</p>
+<p>Two variables are needed: one for the human age, one for the dog age. The second is worked out from the first.</p>
 </details>
 
 <details>
@@ -185,7 +185,7 @@ public class Greeter {
 <div class="problem">
 <h3>3. Ask first</h3>
 <span class="usefile">DogYears.java</span>
-<p>Change your dog years program so it asks the user for their age instead of having it fixed in the code.</p>
+<p>Modify the dog years program so it asks for the user's age instead of having it fixed in the code.</p>
 
 <span class="lbl">Example run</span>
 <pre class="run"><code>How old are you?
@@ -199,7 +199,7 @@ A 12 year old human is 84 in dog years.</code></pre>
 
 <details>
 <summary>Hint 2</summary>
-<p><code>nextInt()</code> gives you back a number, so it goes on the right of an <code>=</code>, like <code>int age = scanner.nextInt();</code></p>
+<p><code>nextInt()</code> returns a number, so it goes on the right of an <code>=</code>, like <code>int age = scanner.nextInt();</code></p>
 </details>
 </div>
 
@@ -215,7 +215,7 @@ People? <b>5</b>
 
 <details>
 <summary>Hint</summary>
-<p>This is the one place whole-number division is what you actually want. <code>/</code> gives the share, <code>%</code> gives the leftovers.</p>
+<p>This is the one place whole-number division is what's needed. <code>/</code> gives the share, <code>%</code> gives the leftovers.</p>
 </details>
 </div>
 

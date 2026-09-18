@@ -7,3 +7,6 @@ print/*.out
 print/*.toc
 print/*.pdf
 print/*.png
+
+# scratch from deck builds
+.week4-build/

@@ -63,7 +63,7 @@
 
 <div class="note win">
 <span class="h">The trade</span>
-<p>You have been copying the same lines twice, once for each fighter. A method lets you write them once and call them twice. When the formula is wrong, you fix it in one place.</p>
+<p>The same lines get copied twice, once for each fighter. A method lets them be written once and called twice. When the formula is wrong, fix it in one place.</p>
 </div>
 
 <h2 id="shape">The shape</h2>
@@ -89,7 +89,7 @@
 
 <div class="note warn">
 <span class="h">Order does not matter</span>
-<p>Java finds <code>square</code> whether you write it above or below <code>main</code>. Put your methods after <code>main</code> so the reader sees the program first.</p>
+<p>Java finds <code>square</code> whether written above or below <code>main</code>. Place methods after <code>main</code> so the reader sees the program first.</p>
 </div>
 
 <h2 id="params">Parameters</h2>
@@ -102,7 +102,7 @@
 
 <div class="scroll">
 <table>
-  <thead><tr><th>You write</th><th>who becomes</th><th>It prints</th></tr></thead>
+  <thead><tr><th>Code</th><th>who becomes</th><th>It prints</th></tr></thead>
   <tbody>
     <tr><td><code>greet("Sam")</code></td><td><code>"Sam"</code></td><td>Hello, Sam!</td></tr>
     <tr><td><code>greet("Adi")</code></td><td><code>"Adi"</code></td><td>Hello, Adi!</td></tr>
@@ -118,7 +118,7 @@
 
 <div class="scroll">
 <table>
-  <thead><tr><th></th><th>Does</th><th>You call it</th></tr></thead>
+  <thead><tr><th></th><th>Does</th><th>Call it</th></tr></thead>
   <tbody>
     <tr><td><code>void</code></td><td>Acts, hands nothing back</td><td>on its own line</td></tr>
     <tr><td><code>int</code>, <code>double</code>, <code>String</code></td><td>Works something out and hands it back</td><td>where a value would go</td></tr>
@@ -169,12 +169,12 @@ Hello, Sam!</code></pre>
 
 <details>
 <summary>Hint 1</summary>
-<p>The method already has its parameter. You only need to call it: <code>greet(name);</code></p>
+<p>The method already has its parameter. Only the call is missing: <code>greet(name);</code></p>
 </details>
 <details>
 <summary>Hint 2</summary>
-<p>The variable in <code>main</code> and the parameter do not have to share a name. <code>greet(name)</code> hands the value over, and inside the method it is called <code>who</code>.</p>
-</details>
+<p>The variable in <code>main</code> and the parameter need not share a name. <code>greet(name)</code> passes the value, and inside the method it is called <code>who</code>.</p>
+
 </div>
 
 <div class="problem">
@@ -194,14 +194,14 @@ Hello, Sam!</code></pre>
 
 <div class="note">
 <span class="h">Then try this</span>
-<p>Add <code>cube</code> next to it, and print <code>square(3) + cube(2)</code>. Two method calls in one expression works fine.</p>
+<p>Add <code>cube</code> next to it, and print <code>square(3) + cube(2)</code>. Two method calls in one expression work fine.</p>
 </div>
 </div>
 
 <div class="problem">
 <h3>4. Battle Sim, without the copy and paste</h3>
 <span class="usefile">BattleScore.java</span>
-<p>In Battle Sim you typed the combat formula twice, once per fighter. Put it in a method and call it twice.</p>
+<p>In Battle Sim the combat formula is typed twice, once per fighter. Put it in a method and call it twice.</p>
 
 <span class="lbl">Example</span>
 <pre class="run"><code>Fighter 1 strength, armor, stamina? <b>80 60 55</b>
@@ -220,7 +220,7 @@ Fighter 2 combat = 67.5</code></pre>
 </details>
 <details>
 <summary>Hint 3</summary>
-<p>Now change the formula to divide by <code>5.0</code> and run it. Notice you only had to edit one line for both fighters. That is the whole point of the week.</p>
+<p>Now change the formula to divide by <code>5.0</code> and run it. Notice only one line needed editing for both fighters. That is the whole point of the week.</p>
 </details>
 </div>
 
@@ -229,7 +229,7 @@ Fighter 2 combat = 67.5</code></pre>
 <ol>
   <li>Methods go inside the class, beside <code>main</code>, never inside it.</li>
   <li>Every method that promises a type must <code>return</code> that type on every path.</li>
-  <li>Keep a method short. If it will not fit on your screen, it is doing too much.</li>
+  <li>Keep a method short. If it spans more than one screen, it is doing too much.</li>
   <li>Name it for what it does. <code>square</code>, not <code>doIt</code>.</li>
   <li>Name, date and one sentence at the top of every file.</li>
   <li>Stuck fifteen minutes on one thing? Stop and ask.</li>

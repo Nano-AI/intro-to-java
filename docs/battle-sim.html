@@ -24,7 +24,7 @@
 
 <div class="window">
   <p class="title">BATTLE SIM</p>
-  <p class="sub">Two fighters go in. Your program says who comes out.</p>
+  <p class="sub">Two fighters go in. The program says who comes out.</p>
 
   <div class="fighter">
     <div class="row">
@@ -89,7 +89,7 @@ It's a draw!</code></pre>
 
 <h2>Example</h2>
 
-<p>What you type is highlighted.</p>
+<p>Typed input is highlighted.</p>
 
 <pre class="run"><code>BATTLE SIM
 Enter two fighters and I'll tell you who wins.
@@ -130,14 +130,14 @@ Fighter 1 wins!</code></pre>
 
 <details>
 <summary>Printing one decimal place</summary>
-<p>Your scores will look like <code>68.75000000001</code>. Use <code>printf</code> with a <code>%.1f</code> placeholder:</p>
+<p>Scores will look like <code>68.75000000001</code>. Use <code>printf</code> with a <code>%.1f</code> placeholder:</p>
 <pre><code>System.out.printf(<span class="s">"  combat score = %.1f\n"</span>, combat);</code></pre>
-<p><code>%.1f</code> gets replaced by the number rounded to one decimal. <code>\n</code> moves to the next line, because <code>printf</code> does not do it for you.</p>
+<p><code>%.1f</code> gets replaced by the number rounded to one decimal. <code>\n</code> moves to the next line, because <code>printf</code> does not add one automatically.</p>
 </details>
 
 <details>
 <summary>The totals look like they do not add up</summary>
-<p>Only the display rounds. Compare the real, unrounded totals when you decide the winner. Printed numbers that look one decimal off are correct and expected.</p>
+<p>Only the display rounds. Compare the real, unrounded totals when determining the winner. Printed numbers that look one decimal off are correct and expected.</p>
 </details>
 
 <details>
@@ -147,7 +147,7 @@ Fighter 1 wins!</code></pre>
 
 <details>
 <summary>Input goes wrong after a number</summary>
-<p>If you add any text input, <code>nextInt()</code> reads the digits and stops, leaving the Enter key you pressed still waiting. The next <code>nextLine()</code> grabs that and comes back empty. Add one extra <code>input.nextLine();</code> to swallow it.</p>
+<p>If any text input is added, <code>nextInt()</code> reads the digits and stops, leaving the Enter key still waiting. The next <code>nextLine()</code> grabs that and comes back empty. Add one extra <code>input.nextLine();</code> to swallow it.</p>
 </details>
 
 <h2>Requirements</h2>
@@ -170,7 +170,7 @@ Fighter 1 wins!</code></pre>
 <ol>
   <li><b>Class advantage.</b> Warriors beat Mages in a tie.</li>
   <li><b>Rank the winner.</b> 180 or more is Legendary, 150 is Elite, 100 is Seasoned, below that is Rookie.</li>
-  <li><b>A third class.</b> Add a Rogue with its own stats and formula. You decide what makes a Rogue strong.</li>
+  <li><b>A third class.</b> Add a Rogue with its own stats and formula. Design what makes a Rogue strong.</li>
   <li><b>Crit chance.</b> Give the winner a 1-in-4 chance of a critical hit and print an extra line when it lands.</li>
 </ol>
 

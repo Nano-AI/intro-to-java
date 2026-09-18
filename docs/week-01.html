@@ -24,7 +24,7 @@
 
 <span class="tab c">BASIC_TYPES.JAVA</span>
 <h1>Variables and types</h1>
-<p class="lede">A variable is a box you put a value in. Every box has a name and a type.</p>
+<p class="lede">A variable is a box to put a value in. Every box has a name and a type.</p>
 
 <div class="zip">
   <a href="downloads/week-1.zip" download>Download week 1</a>
@@ -71,7 +71,7 @@
 
 <details>
 <summary>Done some Python?</summary>
-<p>Python works out the type for you, so <code>age = 12</code> is enough. Java makes you say it: <code>int age = 12;</code>. In return it catches a whole class of mistake before the program runs.</p>
+<p>Python infers the type, so <code>age = 12</code> is enough. Java requires explicit types: <code>int age = 12;</code>. In return it catches a whole class of mistake before the program runs.</p>
 <p>Two that have no Python equivalent: <code>char</code> holds exactly one letter and uses single quotes, and every statement ends in a semicolon.</p>
 </details>
 
@@ -98,7 +98,7 @@
 
 <div class="problem">
 <h3>1. Name the type</h3>
-<p>Pick the type you would store each answer in.</p>
+<p>Pick the type to store each answer in.</p>
 
 <div class="ex" data-ex='{"type": "pick", "options": ["String", "int", "double", "boolean", "char"], "rows": [{"q": "What is your name?", "answer": "String", "why": {"char": "A &lt;code&gt;char&lt;/code&gt; holds exactly one letter. A name is many.", "int": "Names are words, not numbers."}}, {"q": "How old are you?", "answer": "int", "why": {"double": "An age is a whole number. &lt;code&gt;double&lt;/code&gt; works, but &lt;code&gt;int&lt;/code&gt; says what you mean.", "String": "You could store \"12\" as text, but then you could not add to it."}}, {"q": "Is pineapple on pizza good?", "answer": "boolean", "why": {"String": "You could store \"yes\", but &lt;code&gt;boolean&lt;/code&gt; gives you exactly two options and no typos."}}, {"q": "What digits of pi can you remember?", "answer": "double", "why": {"int": "&lt;code&gt;int&lt;/code&gt; would throw away everything after the point, leaving 3."}}, {"q": "What is your favourite letter?", "answer": "char", "why": {"String": "Close. A &lt;code&gt;String&lt;/code&gt; would work, but for exactly one letter &lt;code&gt;char&lt;/code&gt; is the right tool."}}]}'></div>
 
@@ -111,7 +111,7 @@
 <div class="problem">
 <h3>2. About me</h3>
 <span class="usefile">AboutMe.java</span>
-<p>Fill in the five variables with your own answers, then run it.</p>
+<p>Fill in the five variables with answers, then run it.</p>
 
 <span class="lbl">Example output</span>
 <pre class="run"><code>Name: Sam
@@ -127,20 +127,20 @@ Pineapple on pizza: true</code></pre>
 
 <details>
 <summary>Hint 2</summary>
-<p>If it will not compile, check your quotes. Words need <code>"</code>, single letters need <code>'</code>.</p>
+<p>If it will not compile, check the quotes. Words need <code>"</code>, single letters need <code>'</code>.</p>
 </details>
 </div>
 
 <div class="problem">
 <h3>3. Break the rules</h3>
 <span class="usefile">AboutMe.java</span>
-<p>Try each of these, one at a time, and read the error you get:</p>
+<p>Try each of these, one at a time, and read the resulting error:</p>
 <ul>
   <li>Put a decimal into an <code>int</code>.</li>
   <li>Put two letters into a <code>char</code>.</li>
   <li>Name a variable <code>2cool</code>.</li>
 </ul>
-<p>Which of the three messages was easiest to understand? Which one would you not have guessed from the error alone?</p>
+<p>Which of the three messages is easiest to understand? Which one would be hard to guess from the error alone?</p>
 </div>
 
 <a class="next" href="week-02.html">

@@ -38,7 +38,7 @@
 
 <div class="zip">
   <a href="downloads/week-3.zip" download>Download week 3</a>
-  <span>Ten files, one per problem. Unzip once and open them as you go.</span>
+  <span>Ten files, one per problem. Unzip once and open them in sequence.</span>
 </div>
 
 <h2 id="chain">How a chain runs</h2>
@@ -70,7 +70,7 @@
 
 <h2 id="predict">Predict the output</h2>
 
-<p>On paper, before you run them.</p>
+<p>On paper, before running.</p>
 
 <pre><code><span class="c">// 1</span>
 <span class="k">int</span> hp = <span class="n">12</span>;
@@ -114,7 +114,7 @@
     <span class="t">System</span>.out.println(<span class="s">"Outside the middle"</span>);
 }</code></pre>
 
-<p><b>6.</b> In number 3, what would you change so that 500 coins prints <code>Gold</code>?</p>
+<p><b>6.</b> In number 3, what changes would allow 500 coins to print <code>Gold</code>?</p>
 
 <h2 id="bugs">Fix the bugs</h2>
 
@@ -134,10 +134,10 @@
 } <span class="k">else</span> {
     <span class="t">System</span>.out.println(<span class="s">"Access denied"</span>);
 }</code></pre>
-<p>Fix it, then write one sentence saying what was wrong.</p>
+<p>Fix it and write one sentence explaining the problem.</p>
 <details>
 <summary>Hint</summary>
-<p>For text, <code>==</code> does not ask what you think it asks. You already know the method that compares the letters.</p>
+<p>For text, <code>==</code> does not compare the letters. The method that does appeared earlier.</p>
 </details>
 </div>
 
@@ -158,7 +158,7 @@
 } <span class="k">else if</span> (score &gt;= <span class="n">90</span>) {
     grade = <span class="s">"A"</span>;
 }</code></pre>
-<p>Fix it, then write one sentence saying what was wrong.</p>
+<p>Fix it and write one sentence explaining the problem.</p>
 <details>
 <summary>Hint</summary>
 <p>Put 95 into the tracer at the top of this page and watch where it stops.</p>
@@ -176,7 +176,7 @@
 <pre><code><span class="k">if</span> (hp &lt;= <span class="n">0</span>)
     <span class="t">System</span>.out.println(<span class="s">"You died."</span>);
     <span class="t">System</span>.out.println(<span class="s">"Respawning..."</span>);</code></pre>
-<p>Fix it, then write one sentence saying what was wrong.</p>
+<p>Fix it and write one sentence explaining the problem.</p>
 <details>
 <summary>Hint</summary>
 <p>Without braces an <code>if</code> controls exactly one line. The indenting is a lie, Java ignores it.</p>
@@ -244,12 +244,12 @@ Signs point to yes.</code></pre>
 
 <div class="note">
 <span class="h">Work this out</span>
-<p><code>Math.random()</code> gives a decimal from 0 up to, but never reaching, 1. So why does <code>* 5</code> and a cast to <code>int</code> give you 0 to 4? And how would you change it to get 1 to 10?</p>
+<p><code>Math.random()</code> gives a decimal from 0 up to, but never reaching, 1. Why does <code>* 5</code> and a cast to <code>int</code> produce 0 to 4? What change produces 1 to 10?</p>
 </div>
 
 <details>
 <summary>Hint</summary>
-<p>Store the number in a variable once, then run the chain on that variable. Calling <code>Math.random()</code> inside every branch gives you a different number each time and the answers go strange.</p>
+<p>Store the number in a variable once, then run the chain on that variable. Calling <code>Math.random()</code> inside every branch produces a different number each time and the answers go strange.</p>
 </details>
 </div>
 
@@ -299,7 +299,7 @@ HP 90, gold 0.</code></pre>
 <details>
 <summary>Hint</summary>
 <p>Use <code>.equals()</code> to compare what they typed, never <code>==</code>.</p>
-<p>Now try typing <code>Left</code> with a capital L. It breaks. There is a second method that fixes it, <code>.equalsIgnoreCase()</code>, which treats <code>Left</code> and <code>left</code> as the same. Switch to it once you have seen it fail.</p>
+<p>Now try typing <code>Left</code> with a capital L. It breaks. There is a second method that fixes it, <code>.equalsIgnoreCase()</code>, which treats <code>Left</code> and <code>left</code> as the same. Switch to it after seeing the capital L fail.</p>
 </details>
 </div>
 
