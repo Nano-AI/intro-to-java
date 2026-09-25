@@ -16,12 +16,11 @@ export { totalStars, starsNeeded };
 
 // ------------------------------------------------------------ coding lessons
 
-// Unchanged from src/context.js: a pass is the id in `completed` AND an
-// assessment recorded at exactly the current version, so bumping a version
-// asks the student to re-run the checks.
+// A pass is the id in `completed`. A pass recorded by an older app version
+// (older or missing assessment version) still counts, so installing an update
+// never un-checks finished work.
 export const hasPassedPart = (lesson, progress) =>
-  Boolean(lesson) && (progress.completed || []).includes(lesson.id) &&
-  progress.assessments?.[lesson.id] === lesson.assessmentVersion;
+  Boolean(lesson) && (progress.completed || []).includes(lesson.id);
 
 // `lookup` resolves a multipart child id to its lesson object.
 export const hasPassedLesson = (lesson, progress, lookup) =>

@@ -1,3 +1,4 @@
+import { isGameRecord, mergeGameRecord } from './game-contract.js';
 const legacyIds = ['first-movement', 'precision-parking', 'make-a-turn', 'sense-and-stop', 'collect-a-part', 'autonomous-docking'];
 const object = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 const idPattern = /^[a-z][a-z0-9-]{0,80}$/;
@@ -17,6 +18,7 @@ export function normalizeProgress(raw = {}) {
     reflections: dictionary(raw.reflections, v => typeof v === 'string' && v.length <= 20000),
     assessments: dictionary(raw.assessments, v => Number.isInteger(v) && v > 0),
     activities: dictionary(raw.activities, v => Number.isInteger(v) && v > 0),
+    games: Object.fromEntries(Object.entries(object(raw.games)).filter(([key, record]) => idPattern.test(key) && isGameRecord(record, key))),
     view: { environment: ['workshop','garden','moon'].includes(raw.view?.environment) ? raw.view.environment : 'workshop', effects: raw.view?.effects !== false },
   };
 }
@@ -26,6 +28,7 @@ export function mergeProgress(current, incoming) {
     ...current, ...next,
     completed: [...new Set([...current.completed, ...next.completed])],
     ...Object.fromEntries(['drafts','steps','answers','reflections','assessments','activities'].map(key => [key, { ...current[key], ...next[key] }])),
+    games: Object.fromEntries([...new Set([...Object.keys(current.games || {}), ...Object.keys(next.games)])].map(id => [id, mergeGameRecord(current.games?.[id], next.games[id], id)])),
     view: { ...current.view, ...next.view },
   });
 }

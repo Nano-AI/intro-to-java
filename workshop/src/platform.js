@@ -2,9 +2,13 @@ const api = typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null;
 const pending = new Map(), listeners = new Map();
 let sequence = 0;
 export const inVSCode = Boolean(api);
-export const initialRoute = api?.getState()?.route || window.__PIP_INITIAL_ROUTE__ || '/';
-export function rememberRoute(route) { api?.setState({ route }); }
+// The desktop host runs in this page; its events arrive as window messages like VS Code's.
+export const inDesktop = Boolean(window.__TAURI__);
+const savedRoute = () => { try { return localStorage.getItem('pip.route'); } catch { return null; } };
+export const initialRoute = api?.getState()?.route || window.__PIP_INITIAL_ROUTE__ || (!api && savedRoute()) || '/';
+export function rememberRoute(route) { if (api) api.setState({ route }); else try { localStorage.setItem('pip.route', route); } catch {} }
 export function request(method, params = {}) {
+  if (inDesktop) return import('../desktop/host.js').then(host => host.handle(method, params)).then(structuredClone);
   if (!api) return Promise.reject(new Error('Open Pip inside VS Code. The browser preview has no Java editor or extension host.'));
   return new Promise((resolve, reject) => {
     const id = ++sequence;

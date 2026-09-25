@@ -1,0 +1,309 @@
+config,run,case,phase,severity,line,message
+jdt_std_default,1,missing_semicolon,first,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_default,1,missing_semicolon,final,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_default,1,type_mismatch,first,1,10,Type mismatch: cannot convert from String to int
+jdt_std_default,1,type_mismatch,final,1,10,Type mismatch: cannot convert from String to int
+jdt_std_default,1,undefined_variable,first,1,15,totl cannot be resolved to a variable
+jdt_std_default,1,undefined_variable,final,1,15,totl cannot be resolved to a variable
+jdt_std_default,1,missing_return,first,2,7,Resource leak: 'console' is never closed
+jdt_std_default,1,missing_return,first,1,22,This method must return a result of type int
+jdt_std_default,1,missing_return,final,2,7,Resource leak: 'console' is never closed
+jdt_std_default,1,missing_return,final,1,22,This method must return a result of type int
+jdt_std_default,1,nonexistent_robot_method,first,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_default,1,nonexistent_robot_method,final,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_default,1,unclosed_brace,first,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_default,1,unclosed_brace,final,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_default,1,wrong_case_system,first,1,15,system cannot be resolved
+jdt_std_default,1,wrong_case_system,final,1,15,system cannot be resolved
+jdt_std_default,1,clean,final,2,7,Resource leak: 'console' is never closed
+jdt_std_default,2,missing_semicolon,first,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_default,2,missing_semicolon,final,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_default,2,type_mismatch,first,1,10,Type mismatch: cannot convert from String to int
+jdt_std_default,2,type_mismatch,final,1,10,Type mismatch: cannot convert from String to int
+jdt_std_default,2,undefined_variable,first,1,15,totl cannot be resolved to a variable
+jdt_std_default,2,undefined_variable,final,1,15,totl cannot be resolved to a variable
+jdt_std_default,2,missing_return,first,2,7,Resource leak: 'console' is never closed
+jdt_std_default,2,missing_return,first,1,22,This method must return a result of type int
+jdt_std_default,2,missing_return,final,2,7,Resource leak: 'console' is never closed
+jdt_std_default,2,missing_return,final,1,22,This method must return a result of type int
+jdt_std_default,2,nonexistent_robot_method,first,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_default,2,nonexistent_robot_method,final,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_default,2,unclosed_brace,first,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_default,2,unclosed_brace,final,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_default,2,wrong_case_system,first,1,15,system cannot be resolved
+jdt_std_default,2,wrong_case_system,final,1,15,system cannot be resolved
+jdt_std_default,2,clean,final,2,7,Resource leak: 'console' is never closed
+jdt_std_default,3,missing_semicolon,first,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_default,3,missing_semicolon,final,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_default,3,type_mismatch,first,1,10,Type mismatch: cannot convert from String to int
+jdt_std_default,3,type_mismatch,final,1,10,Type mismatch: cannot convert from String to int
+jdt_std_default,3,undefined_variable,first,1,15,totl cannot be resolved to a variable
+jdt_std_default,3,undefined_variable,final,1,15,totl cannot be resolved to a variable
+jdt_std_default,3,missing_return,first,2,7,Resource leak: 'console' is never closed
+jdt_std_default,3,missing_return,first,1,22,This method must return a result of type int
+jdt_std_default,3,missing_return,final,2,7,Resource leak: 'console' is never closed
+jdt_std_default,3,missing_return,final,1,22,This method must return a result of type int
+jdt_std_default,3,nonexistent_robot_method,first,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_default,3,nonexistent_robot_method,final,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_default,3,unclosed_brace,first,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_default,3,unclosed_brace,final,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_default,3,wrong_case_system,first,1,15,system cannot be resolved
+jdt_std_default,3,wrong_case_system,final,1,15,system cannot be resolved
+jdt_std_default,3,clean,final,2,7,Resource leak: 'console' is never closed
+jdt_std_default,4,missing_semicolon,first,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_default,4,missing_semicolon,final,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_default,4,type_mismatch,first,1,10,Type mismatch: cannot convert from String to int
+jdt_std_default,4,type_mismatch,final,1,10,Type mismatch: cannot convert from String to int
+jdt_std_default,4,undefined_variable,first,1,15,totl cannot be resolved to a variable
+jdt_std_default,4,undefined_variable,final,1,15,totl cannot be resolved to a variable
+jdt_std_default,4,missing_return,first,2,7,Resource leak: 'console' is never closed
+jdt_std_default,4,missing_return,first,1,22,This method must return a result of type int
+jdt_std_default,4,missing_return,final,2,7,Resource leak: 'console' is never closed
+jdt_std_default,4,missing_return,final,1,22,This method must return a result of type int
+jdt_std_default,4,nonexistent_robot_method,first,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_default,4,nonexistent_robot_method,final,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_default,4,unclosed_brace,first,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_default,4,unclosed_brace,final,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_default,4,wrong_case_system,first,1,15,system cannot be resolved
+jdt_std_default,4,wrong_case_system,final,1,15,system cannot be resolved
+jdt_std_default,4,clean,final,2,7,Resource leak: 'console' is never closed
+jdt_std_default,5,missing_semicolon,first,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_default,5,missing_semicolon,final,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_default,5,type_mismatch,first,1,10,Type mismatch: cannot convert from String to int
+jdt_std_default,5,type_mismatch,final,1,10,Type mismatch: cannot convert from String to int
+jdt_std_default,5,undefined_variable,first,1,15,totl cannot be resolved to a variable
+jdt_std_default,5,undefined_variable,final,1,15,totl cannot be resolved to a variable
+jdt_std_default,5,missing_return,first,2,7,Resource leak: 'console' is never closed
+jdt_std_default,5,missing_return,first,1,22,This method must return a result of type int
+jdt_std_default,5,missing_return,final,2,7,Resource leak: 'console' is never closed
+jdt_std_default,5,missing_return,final,1,22,This method must return a result of type int
+jdt_std_default,5,nonexistent_robot_method,first,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_default,5,nonexistent_robot_method,final,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_default,5,unclosed_brace,first,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_default,5,unclosed_brace,final,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_default,5,wrong_case_system,first,1,15,system cannot be resolved
+jdt_std_default,5,wrong_case_system,final,1,15,system cannot be resolved
+jdt_std_default,5,clean,final,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,1,missing_semicolon,first,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_tuned,1,missing_semicolon,final,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_tuned,1,type_mismatch,first,1,10,Type mismatch: cannot convert from String to int
+jdt_std_tuned,1,type_mismatch,final,1,10,Type mismatch: cannot convert from String to int
+jdt_std_tuned,1,undefined_variable,first,1,15,totl cannot be resolved to a variable
+jdt_std_tuned,1,undefined_variable,final,1,15,totl cannot be resolved to a variable
+jdt_std_tuned,1,missing_return,first,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,1,missing_return,first,1,22,This method must return a result of type int
+jdt_std_tuned,1,missing_return,final,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,1,missing_return,final,1,22,This method must return a result of type int
+jdt_std_tuned,1,nonexistent_robot_method,first,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_tuned,1,nonexistent_robot_method,final,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_tuned,1,unclosed_brace,first,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_tuned,1,unclosed_brace,final,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_tuned,1,wrong_case_system,first,1,15,system cannot be resolved
+jdt_std_tuned,1,wrong_case_system,final,1,15,system cannot be resolved
+jdt_std_tuned,1,clean,final,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,2,missing_semicolon,first,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_tuned,2,missing_semicolon,final,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_tuned,2,type_mismatch,first,1,10,Type mismatch: cannot convert from String to int
+jdt_std_tuned,2,type_mismatch,final,1,10,Type mismatch: cannot convert from String to int
+jdt_std_tuned,2,undefined_variable,first,1,15,totl cannot be resolved to a variable
+jdt_std_tuned,2,undefined_variable,final,1,15,totl cannot be resolved to a variable
+jdt_std_tuned,2,missing_return,first,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,2,missing_return,first,1,22,This method must return a result of type int
+jdt_std_tuned,2,missing_return,final,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,2,missing_return,final,1,22,This method must return a result of type int
+jdt_std_tuned,2,nonexistent_robot_method,first,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_tuned,2,nonexistent_robot_method,final,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_tuned,2,unclosed_brace,first,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_tuned,2,unclosed_brace,final,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_tuned,2,wrong_case_system,first,1,15,system cannot be resolved
+jdt_std_tuned,2,wrong_case_system,final,1,15,system cannot be resolved
+jdt_std_tuned,2,clean,final,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,3,missing_semicolon,first,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_tuned,3,missing_semicolon,final,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_tuned,3,type_mismatch,first,1,10,Type mismatch: cannot convert from String to int
+jdt_std_tuned,3,type_mismatch,final,1,10,Type mismatch: cannot convert from String to int
+jdt_std_tuned,3,undefined_variable,first,1,15,totl cannot be resolved to a variable
+jdt_std_tuned,3,undefined_variable,final,1,15,totl cannot be resolved to a variable
+jdt_std_tuned,3,missing_return,first,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,3,missing_return,first,1,22,This method must return a result of type int
+jdt_std_tuned,3,missing_return,final,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,3,missing_return,final,1,22,This method must return a result of type int
+jdt_std_tuned,3,nonexistent_robot_method,first,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_tuned,3,nonexistent_robot_method,final,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_tuned,3,unclosed_brace,first,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_tuned,3,unclosed_brace,final,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_tuned,3,wrong_case_system,first,1,15,system cannot be resolved
+jdt_std_tuned,3,wrong_case_system,final,1,15,system cannot be resolved
+jdt_std_tuned,3,clean,final,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,4,missing_semicolon,first,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_tuned,4,missing_semicolon,final,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_tuned,4,type_mismatch,first,1,10,Type mismatch: cannot convert from String to int
+jdt_std_tuned,4,type_mismatch,final,1,10,Type mismatch: cannot convert from String to int
+jdt_std_tuned,4,undefined_variable,first,1,15,totl cannot be resolved to a variable
+jdt_std_tuned,4,undefined_variable,final,1,15,totl cannot be resolved to a variable
+jdt_std_tuned,4,missing_return,first,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,4,missing_return,first,1,22,This method must return a result of type int
+jdt_std_tuned,4,missing_return,final,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,4,missing_return,final,1,22,This method must return a result of type int
+jdt_std_tuned,4,nonexistent_robot_method,first,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_tuned,4,nonexistent_robot_method,final,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_tuned,4,unclosed_brace,first,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_tuned,4,unclosed_brace,final,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_tuned,4,wrong_case_system,first,1,15,system cannot be resolved
+jdt_std_tuned,4,wrong_case_system,final,1,15,system cannot be resolved
+jdt_std_tuned,4,clean,final,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,5,missing_semicolon,first,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_tuned,5,missing_semicolon,final,1,10,"Syntax error, insert "";"" to complete LocalVariableDeclarationStatement"
+jdt_std_tuned,5,type_mismatch,first,1,10,Type mismatch: cannot convert from String to int
+jdt_std_tuned,5,type_mismatch,final,1,10,Type mismatch: cannot convert from String to int
+jdt_std_tuned,5,undefined_variable,first,1,15,totl cannot be resolved to a variable
+jdt_std_tuned,5,undefined_variable,final,1,15,totl cannot be resolved to a variable
+jdt_std_tuned,5,missing_return,first,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,5,missing_return,first,1,22,This method must return a result of type int
+jdt_std_tuned,5,missing_return,final,2,7,Resource leak: 'console' is never closed
+jdt_std_tuned,5,missing_return,final,1,22,This method must return a result of type int
+jdt_std_tuned,5,nonexistent_robot_method,first,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_tuned,5,nonexistent_robot_method,final,1,18,The method jump(int) is undefined for the type Robot
+jdt_std_tuned,5,unclosed_brace,first,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_tuned,5,unclosed_brace,final,1,18,"Syntax error, insert ""}"" to complete Block"
+jdt_std_tuned,5,wrong_case_system,first,1,15,system cannot be resolved
+jdt_std_tuned,5,wrong_case_system,final,1,15,system cannot be resolved
+jdt_std_tuned,5,clean,final,2,7,Resource leak: 'console' is never closed
+diag,1,missing_semicolon,first,1,10,';' expected
+diag,1,missing_semicolon,final,1,10,';' expected
+diag,1,type_mismatch,first,1,10,incompatible types: java.lang.String cannot be converted to int
+diag,1,type_mismatch,final,1,10,incompatible types: java.lang.String cannot be converted to int
+diag,1,undefined_variable,first,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag,1,undefined_variable,final,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag,1,missing_return,first,1,24,missing return statement
+diag,1,missing_return,final,1,24,missing return statement
+diag,1,nonexistent_robot_method,first,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag,1,nonexistent_robot_method,final,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag,1,unclosed_brace,first,1,21,illegal start of expression
+diag,1,unclosed_brace,final,1,21,illegal start of expression
+diag,1,wrong_case_system,first,1,15,package system does not exist
+diag,1,wrong_case_system,final,1,15,package system does not exist
+diag,1,clean,final,,,(none)
+diag,2,missing_semicolon,first,1,10,';' expected
+diag,2,missing_semicolon,final,1,10,';' expected
+diag,2,type_mismatch,first,1,10,incompatible types: java.lang.String cannot be converted to int
+diag,2,type_mismatch,final,1,10,incompatible types: java.lang.String cannot be converted to int
+diag,2,undefined_variable,first,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag,2,undefined_variable,final,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag,2,missing_return,first,1,24,missing return statement
+diag,2,missing_return,final,1,24,missing return statement
+diag,2,nonexistent_robot_method,first,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag,2,nonexistent_robot_method,final,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag,2,unclosed_brace,first,1,21,illegal start of expression
+diag,2,unclosed_brace,final,1,21,illegal start of expression
+diag,2,wrong_case_system,first,1,15,package system does not exist
+diag,2,wrong_case_system,final,1,15,package system does not exist
+diag,2,clean,final,,,(none)
+diag,3,missing_semicolon,first,1,10,';' expected
+diag,3,missing_semicolon,final,1,10,';' expected
+diag,3,type_mismatch,first,1,10,incompatible types: java.lang.String cannot be converted to int
+diag,3,type_mismatch,final,1,10,incompatible types: java.lang.String cannot be converted to int
+diag,3,undefined_variable,first,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag,3,undefined_variable,final,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag,3,missing_return,first,1,24,missing return statement
+diag,3,missing_return,final,1,24,missing return statement
+diag,3,nonexistent_robot_method,first,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag,3,nonexistent_robot_method,final,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag,3,unclosed_brace,first,1,21,illegal start of expression
+diag,3,unclosed_brace,final,1,21,illegal start of expression
+diag,3,wrong_case_system,first,1,15,package system does not exist
+diag,3,wrong_case_system,final,1,15,package system does not exist
+diag,3,clean,final,,,(none)
+diag_appcds,1,missing_semicolon,first,1,10,';' expected
+diag_appcds,1,missing_semicolon,final,1,10,';' expected
+diag_appcds,1,type_mismatch,first,1,10,incompatible types: java.lang.String cannot be converted to int
+diag_appcds,1,type_mismatch,final,1,10,incompatible types: java.lang.String cannot be converted to int
+diag_appcds,1,undefined_variable,first,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag_appcds,1,undefined_variable,final,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag_appcds,1,missing_return,first,1,24,missing return statement
+diag_appcds,1,missing_return,final,1,24,missing return statement
+diag_appcds,1,nonexistent_robot_method,first,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag_appcds,1,nonexistent_robot_method,final,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag_appcds,1,unclosed_brace,first,1,21,illegal start of expression
+diag_appcds,1,unclosed_brace,final,1,21,illegal start of expression
+diag_appcds,1,wrong_case_system,first,1,15,package system does not exist
+diag_appcds,1,wrong_case_system,final,1,15,package system does not exist
+diag_appcds,1,clean,final,,,(none)
+diag_appcds,2,missing_semicolon,first,1,10,';' expected
+diag_appcds,2,missing_semicolon,final,1,10,';' expected
+diag_appcds,2,type_mismatch,first,1,10,incompatible types: java.lang.String cannot be converted to int
+diag_appcds,2,type_mismatch,final,1,10,incompatible types: java.lang.String cannot be converted to int
+diag_appcds,2,undefined_variable,first,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag_appcds,2,undefined_variable,final,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag_appcds,2,missing_return,first,1,24,missing return statement
+diag_appcds,2,missing_return,final,1,24,missing return statement
+diag_appcds,2,nonexistent_robot_method,first,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag_appcds,2,nonexistent_robot_method,final,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag_appcds,2,unclosed_brace,first,1,21,illegal start of expression
+diag_appcds,2,unclosed_brace,final,1,21,illegal start of expression
+diag_appcds,2,wrong_case_system,first,1,15,package system does not exist
+diag_appcds,2,wrong_case_system,final,1,15,package system does not exist
+diag_appcds,2,clean,final,,,(none)
+diag_appcds,3,missing_semicolon,first,1,10,';' expected
+diag_appcds,3,missing_semicolon,final,1,10,';' expected
+diag_appcds,3,type_mismatch,first,1,10,incompatible types: java.lang.String cannot be converted to int
+diag_appcds,3,type_mismatch,final,1,10,incompatible types: java.lang.String cannot be converted to int
+diag_appcds,3,undefined_variable,first,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag_appcds,3,undefined_variable,final,1,15,"cannot find symbol
+  symbol:   variable totl
+  location: class lesson.Student"
+diag_appcds,3,missing_return,first,1,24,missing return statement
+diag_appcds,3,missing_return,final,1,24,missing return statement
+diag_appcds,3,nonexistent_robot_method,first,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag_appcds,3,nonexistent_robot_method,final,1,18,"cannot find symbol
+  symbol:   method jump(int)
+  location: variable robot of type lesson.Robot"
+diag_appcds,3,unclosed_brace,first,1,21,illegal start of expression
+diag_appcds,3,unclosed_brace,final,1,21,illegal start of expression
+diag_appcds,3,wrong_case_system,first,1,15,package system does not exist
+diag_appcds,3,wrong_case_system,final,1,15,package system does not exist
+diag_appcds,3,clean,final,,,(none)

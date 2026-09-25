@@ -2,38 +2,139 @@
   "name": "pip-workshop",
   "displayName": "Pip — Java Robot Workshop",
   "description": "A CSE 121 Java learning course with real Java files, guided practice, and an interactive 3D robot simulator.",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "publisher": "pip-learning",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
-  "engines": { "vscode": "^1.96.0" },
+  "engines": {
+    "vscode": "^1.96.0"
+  },
   "main": "./extension-dist/extension.cjs",
-  "extensionKind": ["workspace"],
-  "extensionDependencies": ["redhat.java"],
-  "categories": ["Education", "Programming Languages"],
-  "activationEvents": ["onView:pip.launcher", "workspaceContains:src/pip/**"],
-  "capabilities": { "untrustedWorkspaces": { "supported": "limited", "description": "Course pages are available; creating or running Java requires a trusted learning workspace." }, "virtualWorkspaces": false },
+  "extensionKind": [
+    "workspace"
+  ],
+  "extensionDependencies": [
+    "redhat.java"
+  ],
+  "categories": [
+    "Education",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onView:pip.launcher",
+    "workspaceContains:src/pip/**"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Course pages are available; creating or running Java requires a trusted learning workspace."
+    },
+    "virtualWorkspaces": false
+  },
   "contributes": {
     "commands": [
-      { "command": "pip.openCourse", "title": "Open Course", "category": "Pip", "icon": "$(home)" },
-      { "command": "pip.openProgress", "title": "View Progress", "category": "Pip" },
-      { "command": "pip.openSettings", "title": "Settings and Java Setup", "category": "Pip" },
-      { "command": "pip.openLesson", "title": "Open Lesson", "category": "Pip" },
-      { "command": "pip.runLesson", "title": "Save and Run Current Lesson", "category": "Pip", "icon": "$(play)" },
-      { "command": "pip.stopRun", "title": "Stop Run", "category": "Pip", "icon": "$(debug-stop)" },
-      { "command": "pip.exportProgress", "title": "Export Progress Backup", "category": "Pip" },
-      { "command": "pip.importProgress", "title": "Import Progress Backup", "category": "Pip" }
+      {
+        "command": "pip.openCourse",
+        "title": "Open Course",
+        "category": "Pip",
+        "icon": "$(home)"
+      },
+      {
+        "command": "pip.openProgress",
+        "title": "View Progress",
+        "category": "Pip"
+      },
+      {
+        "command": "pip.openSettings",
+        "title": "Settings and Java Setup",
+        "category": "Pip"
+      },
+      {
+        "command": "pip.openLesson",
+        "title": "Open Lesson",
+        "category": "Pip"
+      },
+      {
+        "command": "pip.runLesson",
+        "title": "Save and Run Current Lesson",
+        "category": "Pip",
+        "icon": "$(play)"
+      },
+      {
+        "command": "pip.stopRun",
+        "title": "Stop Run",
+        "category": "Pip",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "pip.exportProgress",
+        "title": "Export Progress Backup",
+        "category": "Pip"
+      },
+      {
+        "command": "pip.importProgress",
+        "title": "Import Progress Backup",
+        "category": "Pip"
+      }
     ],
-    "viewsContainers": { "activitybar": [{ "id": "pip", "title": "Pip Workshop", "icon": "media/pip.svg" }] },
-    "views": { "pip": [{ "id": "pip.launcher", "name": "Java foundations" }] },
-    "viewsWelcome": [{ "view": "pip.launcher", "contents": "Learn Java through short exercises and robot labs.\n[Open course](command:pip.openCourse)\n[View progress](command:pip.openProgress)\n[Java setup and settings](command:pip.openSettings)\n\nOpen a learning folder before starting a lesson." }],
-    "menus": {
-      "editor/title": [{ "command": "pip.runLesson", "when": "resourceFilename == Student.java && resourcePath =~ /\\/pip\\/(lessons|games)\\//", "group": "navigation" }],
-      "commandPalette": [{ "command": "pip.openLesson", "when": "false" }]
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "pip",
+          "title": "Pip Workshop",
+          "icon": "media/pip.svg"
+        }
+      ]
     },
-    "keybindings": [{ "command": "pip.runLesson", "key": "ctrl+enter", "mac": "cmd+enter", "when": "editorTextFocus && resourceFilename == Student.java && resourcePath =~ /\\/pip\\/(lessons|games)\\//" }],
-    "configuration": { "title": "Pip Workshop", "properties": { "pip.javaHome": { "type": "string", "default": "", "scope": "machine", "description": "Path to a JDK home containing bin/java and bin/javac. If empty, Pip checks Java runtime settings, JAVA_HOME, macOS java_home, then PATH." } } }
+    "views": {
+      "pip": [
+        {
+          "id": "pip.launcher",
+          "name": "Java foundations"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "pip.launcher",
+        "contents": "Learn Java through short exercises and robot labs.\n[Open course](command:pip.openCourse)\n[View progress](command:pip.openProgress)\n[Java setup and settings](command:pip.openSettings)\n\nOpen a learning folder before starting a lesson."
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "pip.runLesson",
+          "when": "resourceFilename == Student.java && resourcePath =~ /\\/pip\\/(lessons|games)\\//",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "pip.openLesson",
+          "when": "false"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "pip.runLesson",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "editorTextFocus && resourceFilename == Student.java && resourcePath =~ /\\/pip\\/(lessons|games)\\//"
+      }
+    ],
+    "configuration": {
+      "title": "Pip Workshop",
+      "properties": {
+        "pip.javaHome": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "Path to a JDK home containing bin/java and bin/javac. If empty, Pip checks Java runtime settings, JAVA_HOME, macOS java_home, then PATH."
+        }
+      }
+    }
   },
   "scripts": {
     "demo": "node tools/demo.mjs",
@@ -45,10 +146,29 @@
     "vscode:prepublish": "npm run build",
     "package": "vsce package --no-dependencies --skip-license --allow-missing-repository",
     "dev:web": "vite --host 127.0.0.1 --port 4310",
-    "test": "node --test extension/*.test.js",
+    "dev:desktop": "tauri dev",
+    "build:desktop": "tauri build",
+    "test": "node --test extension/*.test.js desktop/*.test.js",
     "test:extension": "npm run build && esbuild extension/test/suite.js --bundle --platform=node --format=cjs --external:vscode --external:playwright --outfile=extension-dist/test.cjs && node extension/test/run.mjs",
-    "test:ui": "npm run test:extension"
+    "test:ui": "npm run test:extension",
+    "build:jre": "rm -rf src-tauri/jre && jlink --add-modules java.base,java.compiler,jdk.compiler,jdk.zipfs --strip-debug --no-man-pages --no-header-files --compress=zip-6 --output src-tauri/jre && chmod -R u+w src-tauri/jre"
   },
-  "dependencies": { "canvas-confetti": "^1.9.4", "react": "^19.3.0", "react-dom": "^19.3.0", "react-router-dom": "^7.18.4", "three": "0.180.0" },
-  "devDependencies": { "@vitejs/plugin-react": "^6.1.1", "@vscode/test-electron": "^2.5.2", "@vscode/vsce": "^3.7.1", "esbuild": "^0.28.2", "playwright": "1.60.0", "vite": "^8.3.0" }
+  "dependencies": {
+    "@lezer/java": "^1.1.4",
+    "canvas-confetti": "^1.9.4",
+    "monaco-editor": "^0.57.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router-dom": "^7.18.4",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.5",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.7.1",
+    "esbuild": "^0.28.2",
+    "playwright": "1.60.0",
+    "vite": "^8.3.0"
+  }
 }

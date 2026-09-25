@@ -10,7 +10,10 @@ test('passing checks completes a lesson without review, activity, or quiz requir
   assert.equal(practiceComplete(lesson,progress),true);
   assert.deepEqual(progress.reflections,{});assert.deepEqual(progress.activities,{});assert.deepEqual(progress.answers,{});
   progress.reflections[lesson.id]='OK';assert.equal(practiceComplete(lesson,progress),true);
-  progress.assessments[lesson.id]=lesson.assessmentVersion-1;assert.equal(practiceComplete(lesson,progress),false);
+  // A pass from an older app version still counts after an update.
+  progress.assessments[lesson.id]=lesson.assessmentVersion-1;assert.equal(practiceComplete(lesson,progress),true);
+  delete progress.assessments[lesson.id];assert.equal(practiceComplete(lesson,progress),true);
+  progress.completed=[];assert.equal(practiceComplete(lesson,progress),false);
 });
 test('multipart completion still requires every repair, but never requires notes',()=>{
   const parent=lessons.find(l=>l.id==='debug-semicolon');

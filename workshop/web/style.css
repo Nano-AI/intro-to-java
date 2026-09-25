@@ -2,8 +2,8 @@
   --paper: #f6f4ed;
   --panel: #fffdf7;
   --ink: #263c36;
-  --muted: #626e62;
-  --line: #dfdfd1;
+  --muted: #56625a;
+  --line: #d2d4c4;
   --green: #286451;
   --green-hover: #205442;
   --lime: #e7efd5;
@@ -44,15 +44,16 @@
 body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
 button, select { font: inherit; color: inherit; cursor: pointer; }
 /* Scope application controls: CodeMirror owns its internal widgets and dimensions. */
-button:not(.cm-button) { min-height: 36px; border: 1px solid var(--line); border-radius: var(--radius-small); padding: 6px var(--space-3); background: var(--panel); font-size: 12px; font-weight: 600; transition: background 120ms, border-color 120ms; }
+button:not(.cm-button) { min-height: 36px; border: 1px solid var(--region-border); border-radius: var(--radius-small); padding: 6px var(--space-3); background: var(--panel); font-size: 12px; font-weight: 600; transition: background 120ms, border-color 120ms; }
 button:not(.cm-button):hover:not(:disabled) { border-color: var(--green); background: var(--lime); }
 button:not(.cm-button):active:not(:disabled) { transform: translateY(1px); }
-button:disabled { opacity: .5; cursor: default; }
-button.primary { color: var(--panel); background: var(--green); border-color: var(--green); }
+button:not(.cm-button):disabled { opacity: 1; color: var(--muted); background: transparent; border-style: dashed; cursor: not-allowed; }
+button.primary { min-height: 40px; color: var(--panel); background: var(--green); border-color: var(--green); }
 button.primary:hover:not(:disabled) { background: var(--green-hover); color: var(--panel); }
 button.text-button, button.quiet { border-color: transparent; background: transparent; color: var(--green); }
-select { min-height: 36px; padding: 6px var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-small); background: var(--panel); font-size: 12px; }
-:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+select { min-height: 36px; padding: 6px var(--space-2); border: 1px solid var(--region-border); border-radius: var(--radius-small); background: var(--panel); font-size: 12px; }
+:focus-visible { outline: 2px solid var(--focus-border); outline-offset: 3px; }
+[tabindex="-1"]:focus { outline: none; }
 a { color: var(--green); }
 h1, h2, h3 { margin: 0; line-height: 1.25; text-wrap: balance; }
 p { text-wrap: pretty; }
@@ -78,7 +79,7 @@ code, pre { font-family: var(--mono); }
 #celebration span { font-size: 13px; color: var(--muted); text-align: center; }
 main { display: grid; grid-template-columns: 260px minmax(0, 1fr); max-width: 1800px; min-height: calc(100dvh - var(--header-height)); margin: auto; }
 .mission-panel { border-right: 1px solid var(--line); padding: var(--space-6) var(--space-5); min-width: 0; }
-.eyebrow { font: 10px/1.5 var(--mono); color: var(--muted); letter-spacing: 1px; }
+.eyebrow { font: 11px/1.5 var(--mono); color: var(--muted); letter-spacing: 1px; }
 .course-heading h1 { font-size: 22px; letter-spacing: -.7px; margin-top: var(--space-2); }
 .course-reference { display: block; color: var(--muted); font-size: 11px; margin-top: var(--space-2); }
 #curriculum { margin-top: var(--space-5); }

@@ -1,0 +1,50 @@
+/* Top bar for lesson, quiz, and coding pages; fixed-height coding layout for the desktop app. */
+.app-topbar { position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:16px; min-height:56px; padding:8px 16px; background:var(--panel); border-bottom:1px solid var(--line); }
+.topbar-back { display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:0 14px; flex-shrink:0; border:1px solid var(--line); border-radius:var(--radius-small); color:var(--ink); background:var(--paper); font-size:14px; font-weight:600; text-decoration:none; }
+.topbar-back:hover { border-color:var(--green); background:var(--lime); }
+.topbar-trail { min-width:0; flex:1; }
+.topbar-trail ol { display:flex; align-items:center; gap:8px; margin:0; padding:0; list-style:none; min-width:0; font-size:13px; color:var(--muted); }
+.topbar-trail li { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.topbar-trail li:first-child { flex-shrink:1; }
+.topbar-trail li + li::before { content:'/'; margin-right:8px; color:var(--muted); }
+.topbar-trail li[aria-current=page] { color:var(--ink); font-weight:600; flex-shrink:0; max-width:40ch; }
+
+.flow-steps { display:flex; align-items:center; gap:4px; margin:0; padding:0; list-style:none; flex-shrink:0; }
+.flow-steps li + li::before { content:''; display:inline-block; width:16px; height:1px; margin:0 4px 0 0; vertical-align:middle; background:var(--region-border); }
+.flow-step { display:inline-flex; align-items:center; gap:8px; min-height:36px; padding:0 12px 0 6px; border-radius:18px; font-size:13px; font-weight:600; color:var(--muted); text-decoration:none; }
+a.flow-step { color:var(--ink); }
+a.flow-step:hover { background:var(--lime); }
+.flow-step[aria-current=step] { color:var(--ink); background:var(--lime); box-shadow:inset 0 0 0 1px var(--green); }
+.flow-step[aria-disabled=true] { cursor:not-allowed; }
+.flow-number { display:inline-grid; place-items:center; width:24px; height:24px; border-radius:50%; border:1px solid currentColor; font:12px var(--mono); font-variant-numeric:tabular-nums; }
+.is-done .flow-number, .flow-step[aria-current=step] .flow-number { border-color:var(--green); background:var(--green); color:var(--panel); }
+.learning-links .locked-step { display:inline-block; padding:8px 12px; border:1px dashed var(--region-border); border-radius:6px; font-size:12px; color:var(--muted); cursor:not-allowed; }
+
+/* Lesson and quiz pages scroll as a page under the sticky bar. */
+.flow-shell .briefing-page { min-height:0; }
+.flow-shell .briefing-slide h2 { font-size:20px; margin:28px 0 12px; }
+.briefing-actions p { margin:0; font-size:13px; color:var(--muted); flex:1; }
+.briefing-actions button.primary { min-height:44px; padding-inline:18px; font-size:14px; }
+.briefing-actions button:disabled { opacity:1; color:var(--muted); background:var(--panel); border:1px dashed var(--region-border); }
+
+/* Desktop coding pages fill the window: bar on top, editor left (scrolls inside itself), task panel right (own scroll). */
+html:has(.desktop-shell), body:has(.desktop-shell) { height:100%; overflow:hidden; }
+.desktop-shell { display:flex; flex-direction:column; height:100dvh; overflow:hidden; }
+.desktop-shell>.app-topbar { position:static; flex-shrink:0; }
+.desktop-shell>.desktop-split { flex:1; min-height:0; height:auto; }
+.desktop-shell .editor-pane { display:flex; flex-direction:column; min-height:0; height:100%; }
+.desktop-shell .editor-pane>* { flex:1; min-height:0; }
+.desktop-shell .editor-pane>.editor-loading { flex:0 0 auto; }
+.desktop-shell .desktop-split>.lesson-panel { min-height:0; height:100%; overflow:auto; overscroll-behavior:contain; }
+
+@media (max-width:900px) {
+  html:has(.desktop-shell), body:has(.desktop-shell) { height:auto; overflow:visible; }
+  .desktop-shell { height:auto; overflow:visible; }
+  .desktop-shell .desktop-split>.lesson-panel { height:auto; overflow:visible; }
+  .desktop-shell .editor-pane { height:60vh; }
+}
+@media (max-width:760px) {
+  .app-topbar { flex-wrap:wrap; }
+  .flow-steps { order:3; width:100%; }
+  .topbar-back { padding:0 12px; }
+}
