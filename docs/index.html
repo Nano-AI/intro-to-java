@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pip Workshop</title>
-<meta name="description" content="Pip Workshop: a VS Code extension for learning beginner Java with lessons, quizzes, real code, and a robot simulator.">
+<meta name="description" content="Pip Workshop: a lightweight desktop app for learning beginner Java with lessons, quizzes, real code, and a robot simulator.">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="landing.css">
 </head>
@@ -12,32 +12,34 @@
 <div class="wrap">
 
 <header class="hero">
-  <p class="kicker">VS Code extension &middot; free</p>
+  <p class="kicker">Desktop app for Mac &middot; free</p>
   <h1>Pip Workshop</h1>
-  <p class="pitch">Learn beginner Java inside VS Code: a short lesson, a prediction quiz, then real code in a real Java file, checked automatically and run to see the result.</p>
-  <a class="btn" href="downloads/pip-workshop-0.6.0.vsix">Download Pip Workshop 0.6.0 (.vsix)</a>
-  <p class="btn-sub">348 KB &middot; local VSIX install, no Marketplace listing yet</p>
+  <p class="pitch">Learn beginner Java in one small app: explore an idea, answer a prediction quiz, then write real code in a built-in editor, checked automatically and run to see the result. Java is included; nothing else to install.</p>
+  <a class="btn" href="downloads/Pip-Workshop-0.7.0-mac-arm64.dmg" download>Download Pip Workshop 0.7.0 for Mac</a>
+  <p class="btn-sub">29 MB &middot; Apple silicon (M1 or newer) &middot; Java included</p>
 </header>
 
 <section id="install">
   <h2>Install</h2>
   <ol class="steps">
-    <li>Install VS Code 1.96 or newer.</li>
-    <li>Install the <strong>Language Support for Java by Red Hat</strong> extension, and have a JDK available (a free build such as Eclipse Temurin works; Java 21 is recommended).</li>
-    <li>Download the VSIX above, then in VS Code open <strong>Extensions &rarr; &hellip; &rarr; Install from VSIX</strong> and choose the downloaded file.</li>
-    <li>Open a learning folder and run <strong>Pip: Open Course</strong> from the Command Palette.</li>
+    <li>Download the installer above and open it.</li>
+    <li>Drag <strong>Pip Workshop</strong> into the <strong>Applications</strong> folder.</li>
+    <li>Open Pip Workshop from Applications. The first time, macOS may say it cannot check the app: open <strong>System Settings &rarr; Privacy &amp; Security</strong>, choose <strong>Open Anyway</strong>, then open the app again.</li>
+    <li>Choose <strong>Start the first lesson</strong>. Code and progress save automatically in the <code>.pip-java</code> folder in the home folder.</li>
   </ol>
+  <h3>Updating</h3>
+  <p>To update, download the newest installer and drag it into Applications again, replacing the old copy. Code and completed lessons stay in <code>.pip-java</code>, so earlier progress stays checked off.</p>
 </section>
 
 <section id="inside">
   <h2>What's inside</h2>
   <ul class="loop">
-    <li>Lesson (interactive model)</li>
+    <li>Explore (interactive model)</li>
     <li>Quiz (prediction)</li>
     <li>Code in <code>Student.java</code></li>
-    <li>Save &amp; run</li>
+    <li>Run &amp; check</li>
   </ul>
-  <p>Each unit runs that loop in a real Java editor with automated checks, plain-language error notes, and output graphics or a 3D robot replay. Three robot projects close out the course: an obstacle detour, a cargo delivery, and a hoop shot. 35 learning units, 39 coding parts (30 console, 9 robot), across six modules:</p>
+  <p>Each unit runs that loop in a built-in Java editor with live error underlines, code suggestions, automated checks, plain-language error notes, and output graphics or a 3D robot replay. Three robot projects close out the course: an obstacle detour, a cargo delivery, and a hoop shot. 35 learning units, 39 coding parts (30 console, 9 robot), across six modules:</p>
   <ul class="modules">
     <li>Start with Java</li>
     <li>Make work repeat</li>
