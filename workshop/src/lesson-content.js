@@ -20,7 +20,7 @@ export function improveLessons(existing) {
     concept:'An `int` stores a whole number. A `double` can store a fractional number. In the model, try to put `0.5` into each type.',
     example:'double power = 0.5;',prediction:['Which type can store `0.5`?',['`int`','`double`'],1],
     task:'Declare a `double` named `power`, set it to `0.5`, and print `power`.',hint:'The structure is the same as the first declaration; only the type and value change.',
-    reflection:'Why does `int power = 0.5;` fail? Explain why casting it to `int` would lose information.',
+    reflection:'Why does `int power = 0.5;` fail? Would a whole-number variable keep the `.5` part? Explain your answer.',
     starter:main('// Store 0.5 in a variable named power.\n\n// Print power.'),solution:main('double power = 0.5;\nSystem.out.println(power);'),
     cases:[{input:'',expected:'0.5'}],requirements:{variables:{power:'double'},prints:['power']},visual:{kind:'declaration',name:'power',type:'double',value:'0.5'},
   });
@@ -51,7 +51,7 @@ export function improveLessons(existing) {
   get('java-scanner').requirements={calls:['next','nextInt']};
   get('java-random-math').requirements={calls:['abs','min']};
   Object.assign(get('java-references'), {
-    task:'Make `backup` refer to `readings`. Set `backup[0]` to `replacement`, then print `readings[0]` and `readings[1]`.',
+    task:'Make `backup` refer to the same array as `readings`. Set `backup[0]` to the supplied `replacement`. Print `readings[0]` on the first line and `readings[1]` on the second. With `{10, 20}` and `replacement = 99`, print `99`, then `20`.',
     starter:main('int[] readings = {10, 20};\nint replacement = 99;\nint[] backup = new int[2];\nbackup[0] = replacement;\nSystem.out.println(readings[0]);\nSystem.out.println(readings[1]);'),
     solution:main('int[] readings = {10, 20};\nint replacement = 99;\nint[] backup = readings;\nbackup[0] = replacement;\nSystem.out.println(readings[0]);\nSystem.out.println(readings[1]);'),
   });
@@ -89,7 +89,7 @@ export function improveLessons(existing) {
   add('java-arrays', {
     id:'debug-array-bounds',debug:true,title:'Keep the scanner in bounds',topic:'Debugging an array index',
     intro:'The scan steps past the final array element. Repair the loop and try an empty buffer too.',
-    task:'Change the loop condition so every valid element is visited exactly once.',hint:'The last valid index is `values.length - 1`.',
+    task:'Repair the loop condition so it reads each value in `values` once and stops at the end of the array. Keep the values unchanged. Print their total. The sample prints `12`; an empty array prints `0`.',hint:'The last valid index is `values.length - 1`.',
     starter:main('int[] values = {2, 4, 6};\nint total = 0;\nfor (int i = 0; i <= values.length; i++) {\n    total += values[i];\n}\nSystem.out.println(total);'),
     solution:main('int[] values = {2, 4, 6};\nint total = 0;\nfor (int i = 0; i < values.length; i++) {\n    total += values[i];\n}\nSystem.out.println(total);'),
     cases:[{input:'',expected:'12'}],requirements:{variables:{values:'int[]'},loops:{for:1}},visual:{kind:'array',mode:'bounds'},

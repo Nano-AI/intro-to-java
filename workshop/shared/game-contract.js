@@ -20,13 +20,14 @@ export const UNIT_IDS = ['basics', 'loops', 'methods', 'decisions', 'arrays'];
 export const GIT_UNIT_ID = 'git';
 
 export const GAMES_PER_SUBTOPIC = 5;
-export const PROJECT_IDS = ['talent-show', 'free-draw'];
-export const PROJECT_UNITS = { 'talent-show': 'basics', 'free-draw': 'loops' };
+// Keep the earlier reserved IDs valid so existing backups remain readable.
+export const PROJECT_IDS = ['talent-show', 'free-draw', 'supply-relay', 'staircase-arena', 'tower-rescue', 'signal-patrol', 'mosaic-survey'];
+export const PROJECT_UNITS = { 'talent-show': 'basics', 'free-draw': 'loops', 'supply-relay': 'basics', 'staircase-arena': 'loops', 'tower-rescue': 'methods', 'signal-patrol': 'decisions', 'mosaic-survey': 'arrays' };
 
-// 11 subtopics x 5 games = 55 regular games, plus 2 projects.
+// Planned catalog ceiling; the UI counts only installed entries.
 export const REGULAR_GAME_COUNT = SUBTOPICS.length * GAMES_PER_SUBTOPIC;
-export const CATALOG_ENTRY_COUNT = REGULAR_GAME_COUNT + PROJECT_IDS.length; // 57
-export const MAX_STARS = REGULAR_GAME_COUNT * 3 + PROJECT_IDS.length;       // 167
+export const CATALOG_ENTRY_COUNT = REGULAR_GAME_COUNT + PROJECT_IDS.length;
+export const MAX_STARS = REGULAR_GAME_COUNT * 3 + PROJECT_IDS.length;
 
 export const subtopicUnit = subtopic => UNIT_IDS[Number(subtopic.split('.')[0]) - 1];
 
@@ -109,6 +110,8 @@ export const mulberry32 = seed => {
 // The harness always uses explicit reproducible seeds 1..N per level.
 export const seedsFor = count => Array.from({ length: count }, (_, i) => i + 1);
 export const DEFAULT_SEEDS = 3;
+export const PUBLIC_GAME_CASES = 3;
+export const SUBMIT_GAME_CASES = 20;
 
 // ---------------------------------------------------------------- host wiring
 
@@ -120,13 +123,12 @@ export const GAME_REQUESTS = {
   stop: 'run.stop', // shared with lessons; the existing stop mechanism is reused
 };
 
-// `game.run` distinguishes the two modes explicitly rather than by the presence
-// of an `input` key, so a graded run can never be mistaken for an experiment.
-export const RUN_MODES = { graded: 'graded', custom: 'custom' };
+// Retain the existing saved mode names; public Run never awards completion.
+export const RUN_MODES = { graded: 'graded', custom: 'custom', public: 'public' };
 
 // Host -> webview broadcasts for games. `run.started` / `run.finished` are the
 // existing lesson events, reused with `gameId` alongside `lessonId`.
-// `run.progress` is new: a graded run simulates up to six worlds and each Java
+// `run.progress` streams results as they finish. Submit simulates 20–40 worlds; each Java
 // child gets its own 12 s budget, so the whole run far exceeds any single
 // process limit and the student needs per-world feedback while it happens.
 // Payload: { gameId, runId, world } where `world` is one `worldResult`.
@@ -190,8 +192,9 @@ export const gameResult = ({
 }) => ({ kind: 'game', gameId, runId, mode, earnedStars, savedStars, sourceChecks, diagnostics, worlds, stage, error });
 
 // One entry per simulated world.
-export const worldResult = ({ level, seed, world, events = [], end = null, passed = false, message = '' }) =>
-  ({ level, seed, world, events, end, passed, message });
+export const worldResult = ({ level, seed, world, events = [], end = null, passed = false, message = '',
+  label = '', input = world?.input ?? '', inputs = { ...world?.constants, ...world?.variables }, output = '',
+}) => ({ level, seed, world, events, end, passed, message, label, input, inputs, output });
 
 export const emptyEnd = () => ({
   robot: { x: 0, y: 0, dir: 'N' },
@@ -301,7 +304,7 @@ export const validateGame = game => {
 
   if (game.project) {
     if (!UNIT_IDS.includes(game.unit)) fail(`project unit must be one of ${UNIT_IDS.join(', ')}`);
-    if (!PROJECT_IDS.includes(game.id)) fail('projects are exactly talent-show and free-draw');
+    if (!PROJECT_IDS.includes(game.id)) fail('project id must be registered in PROJECT_IDS');
   } else if (!SUBTOPICS.includes(game.subtopic)) {
     fail(`subtopic must be one of ${SUBTOPICS.join(', ')}`);
   }

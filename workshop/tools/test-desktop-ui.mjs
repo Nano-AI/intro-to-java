@@ -1,0 +1,713 @@
+// Exercise the Tauri frontend and desktop host with an isolated filesystem/IPC bridge.
+// Native process/daemon behavior is covered separately by cargo test.
+import assert from 'node:assert/strict';
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright';
+import { createServer } from 'vite';
+import { runProcess, withPackage, lessonPackage } from '../host/runner.js';
+import { games } from '../src/games/index.js';
+const projects = games.filter(game => game.project);
+import { lessons, stepsFor, independentChallenges } from '../src/curriculum.js';
+import { gamePackage, gameSourcePath } from '../shared/game-contract.js';
+import { normalizeProgress } from '../shared/progress.js';
+
+const root = fileURLToPath(new URL('../', import.meta.url));
+const fixture = await fs.mkdtemp(path.join(os.tmpdir(), 'pip-desktop-ui-'));
+const resources = path.join(fixture, 'resources'), student = path.join(fixture, '.pip-java');
+await fs.mkdir(resources); await fs.mkdir(student);
+await fs.symlink(path.join(root, 'src-tauri/jre'), path.join(resources, 'jre'));
+for (const file of ['Robot.java', 'Runner.java', 'InspectSource.java']) await fs.copyFile(path.join(root, file), path.join(resources, file));
+const java = path.join(resources, 'jre/bin/java'), javac = path.join(resources, 'jre/bin/javac');
+const compiled = await runProcess(javac, ['-d', resources, path.join(root, 'desktop/DiagD.java')]);
+assert.equal(compiled.code, 0, compiled.error);
+const progressFile = path.join(student, 'progress.json');
+const savedFile = path.join(student, gameSourcePath(projects[0].id));
+const oldSource = withPackage('// Saved before the homework update.\n' + projects[0].starter, gamePackage(projects[0].id));
+await fs.mkdir(path.dirname(savedFile), { recursive: true }); await fs.writeFile(savedFile, oldSource);
+await fs.writeFile(progressFile, JSON.stringify(normalizeProgress({ games: { [projects[0].id]: { stars: 1, best: null, updatedAt: null } } })));
+let completionRequests = 0;
+const invoke = async (command, args = {}) => {
+  switch (command) {
+    case 'paths': return { home: fixture, resources, temp: fixture, platform: process.platform, development: true };
+    case 'fs_read': return fs.readFile(args.path, 'utf8');
+    case 'fs_write': return fs.writeFile(args.path, args.contents, { flag: args.createNew ? 'wx' : 'w' });
+    case 'fs_mkdir': return fs.mkdir(args.path, { recursive: true });
+    case 'fs_remove': return fs.rm(args.path, { recursive: true, force: true });
+    case 'fs_rename': return fs.rename(args.from, args.to);
+    case 'fs_exists': return fs.access(args.path).then(() => true, () => false);
+    case 'fs_mkdtemp': return fs.mkdtemp(args.prefix);
+    case 'run_process': return runProcess(args.command, args.args, { cwd: args.cwd || undefined, input: args.input, timeout: args.timeoutMs, maxOutput: args.maxOutput });
+    case 'complete': case 'diagnose': {
+      if (command === 'complete') completionRequests++;
+      const kind = command === 'complete' ? 'C' : 'D';
+      const input = `${kind}\n${args.sourceRoot}\n${args.relPath}\n${Buffer.byteLength(args.source)}\n${kind === 'C' ? args.offset + '\n' : ''}${args.source}`;
+      const result = await runProcess(java, ['-cp', resources, 'DiagD'], { input });
+      assert.equal(result.code, 0, result.error);
+      return JSON.parse(result.stdout.trim());
+    }
+    case 'kill_process': return;
+    default: throw new Error(`Unexpected desktop command: ${command}`);
+  }
+};
+const server = await createServer({ root, cacheDir: path.join(fixture, '.vite'), server: { host: '127.0.0.1', port: 4319, strictPort: true, watch: null, hmr: false } });
+let browser, page;
+try {
+  await server.listen();
+  browser = await chromium.launch({ headless: true });
+  page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  await page.exposeFunction('__pipInvoke', invoke);
+  await page.addInitScript(() => { window.__TAURI__ = { core: { invoke: (name, args) => window.__pipInvoke(name, args) } }; localStorage.setItem('pip.route', '/game/supply-relay'); if (location.hash.slice(1)) window.__PIP_INITIAL_ROUTE__ = location.hash.slice(1); });
+  const open = async route => { await page.goto(`http://127.0.0.1:4319/#${route}`); };
+  const readableButton = async button => {
+    await button.evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished.catch(() => {}))));
+    const sample = await button.evaluate(element => {
+      const rgba = value => value.match(/[\d.]+/g).map(Number);
+      const over = (front, back) => front.slice(0, 3).map((value, i) => value * (front[3] ?? 1) + back[i] * (1 - (front[3] ?? 1)));
+      const surfaces = [];
+      for (let node = element; node; node = node.parentElement) surfaces.unshift(rgba(getComputedStyle(node).backgroundColor));
+      const background = surfaces.reduce((back, front) => over(front, back), [255, 255, 255]);
+      const text = over(rgba(getComputedStyle(element).color), background);
+      const luminance = color => color.map(value => value / 255).map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4).reduce((sum, value, i) => sum + value * [.2126, .7152, .0722][i], 0);
+      const levels = [luminance(text), luminance(background)].sort((a, b) => b - a);
+      return { label: element.textContent, text, background, ratio: (levels[0] + .05) / (levels[1] + .05) };
+    });
+    assert.ok(sample.ratio >= 4.5, `Rendered button contrast: ${JSON.stringify(sample)}`);
+  };
+  await page.goto('http://127.0.0.1:4319/');
+  await page.getByRole('heading', { name: 'Course', exact: true }).waitFor();
+  assert.deepEqual(await page.locator('.app-nav a').allTextContents(), ['Course', 'Projects', 'Progress', 'Settings']);
+  assert.equal(await page.locator('.module-project-links').count(), 0, 'Course contains modules; projects belong inside modules');
+  await page.getByRole('progressbar', { name: 'Coding practice: 0 of 39 coding practices passed', exact: true }).waitFor();
+  await page.screenshot({ path: path.join(fixture, 'course-light.png'), fullPage: true });
+  // Follow the actual student path instead of testing only dashboard and project routes.
+  const navigation = async () => {
+    if (/^#\/(game|project)\//.test(new URL(page.url()).hash)) {
+      assert.equal(await page.locator('.site-header').count(), 0, 'project toolbar replaces the global navigation');
+      assert.equal(await page.getByRole('link', { name: /Projects/ }).first().isVisible(), true, 'focused projects retain an exit');
+    } else {
+      assert.deepEqual(await page.locator('.app-nav a').allTextContents(), ['Course', 'Projects', 'Progress', 'Settings']);
+      assert.equal(await page.getByRole('navigation', { name: 'Application', exact: true }).isVisible(), true);
+    }
+    for (const step of await page.locator('.flow-step').all()) {
+      const box = await step.boundingBox();
+      assert.ok(box && box.height >= 44 && box.width >= 70, 'available and locked steps need comfortable targets');
+      if (await step.getAttribute('aria-current') === 'step') await readableButton(step);
+    }
+  };
+  await page.getByRole('link', { name: 'Java basics', exact: true }).click();
+  const firstLesson = page.locator('.module-lesson').filter({ has: page.getByRole('heading', { name: 'Bring the console online', exact: true }) });
+  await firstLesson.waitFor();
+  assert.equal(await page.getByRole('tab', { name: 'To do', exact: true }).getAttribute('aria-selected'), 'true');
+  await page.getByRole('tab', { name: 'Review', exact: true }).click();
+  await page.getByText('No finished lessons yet.', { exact: true }).waitFor();
+  await page.getByRole('tab', { name: 'To do', exact: true }).click();
+  assert.ok(await page.locator('.module-projects .project-card').count() > 0, 'module has a separate project section');
+  assert.equal(await page.locator('.module-lessons .project-card').count(), 0, 'projects are distinguishable from lessons');
+  assert.equal(await page.locator('.challenge-card').count(), 2, 'each programming module includes two distinct challenges');
+  const challenge = independentChallenges[0];
+  await open(`/challenge/${challenge.id}`);
+  await page.getByRole('heading', { name: 'Finish first', exact: true }).waitFor();
+  assert.equal(await page.locator('.monaco-editor').count(), 0, 'challenges require their coding prerequisites');
+  await open('/module/basics');
+  await navigation();
+  await firstLesson.getByRole('link', { name: 'Explore', exact: true }).click();
+  await page.locator('.visual-lab').waitFor();
+  await navigation();
+  await page.getByRole('button', { name: 'Execute next statement', exact: true }).click();
+  await page.getByRole('button', { name: 'Execute next statement', exact: true }).click();
+  await readableButton(page.getByRole('button', { name: 'Take the quiz', exact: true }));
+  await page.screenshot({ path: path.join(fixture, 'lesson-explore.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Take the quiz', exact: true }).click();
+  await page.locator('.quiz-page').waitFor();
+  await navigation();
+  const hello = lessons.find(lesson => lesson.id === 'hello-java'), answer = stepsFor(hello)[2].answer;
+  await page.getByRole('radio').nth((answer + 1) % 2).check();
+  await page.getByText(/Not quite\./).waitFor();
+  await page.screenshot({ path: path.join(fixture, 'lesson-quiz-error.png'), fullPage: true });
+  await page.getByRole('radio').nth(answer).check();
+  await readableButton(page.getByRole('button', { name: 'Start practice', exact: true }));
+  await page.getByRole('button', { name: 'Start practice', exact: true }).click();
+  await page.locator('.monaco-editor .view-line').first().waitFor();
+  await navigation();
+  assert.equal(await page.locator('.editor-bar button').count(), 0, 'practice has one Run action');
+  await page.setViewportSize({ width: 900, height: 600 });
+  await navigation();
+  assert.ok((await page.locator('.monaco-editor').boundingBox()).height >= 200, 'practice editor fits the minimum desktop window');
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  await page.screenshot({ path: path.join(fixture, 'lesson-practice-narrow.png'), fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.locator('.monaco-editor .view-line').first().click();
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.evaluate(source => {
+    const clipboardData = new DataTransfer(); clipboardData.setData('text/plain', source);
+    document.activeElement.dispatchEvent(new ClipboardEvent('paste', { clipboardData, bubbles: true, cancelable: true }));
+  }, hello.solution.replace('Pip online', 'Piponline'));
+  await page.locator('#run').click();
+  await page.locator('.feedback.error').waitFor({ timeout: 60000 });
+  assert.match(await page.locator('.actual-output').first().innerText(), /Piponline/);
+  assert.equal(await page.locator('.diff-note, .diff-line, .error-note, .hint-text, .hint-example').count(), 0, 'failed practice shows raw output without coaching or automatic hints');
+  await page.getByRole('button', { name: 'Show a hint', exact: true }).click();
+  await page.locator('.hint-text').waitFor();
+  assert.equal(await page.getByRole('button', { name: /Show the concept/ }).count(), 0, 'practice hint does not expand into a worked example');
+  await page.screenshot({ path: path.join(fixture, 'practice-raw-feedback.png'), fullPage: true });
+  await page.locator('.monaco-editor .view-line').first().click();
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.evaluate(source => {
+    const clipboardData = new DataTransfer(); clipboardData.setData('text/plain', source);
+    document.activeElement.dispatchEvent(new ClipboardEvent('paste', { clipboardData, bubbles: true, cancelable: true }));
+  }, hello.solution);
+  assert.equal(await page.locator('.feedback.error').count(), 0, 'practice edits immediately remove the previous failed judgement');
+  await page.locator('#run').click();
+  await page.locator('.practice-completion').waitFor({ timeout: 60000 });
+  assert.ok(JSON.parse(await fs.readFile(progressFile, 'utf8')).completed.includes(hello.id));
+  await page.screenshot({ path: path.join(fixture, 'lesson-practice-complete.png'), fullPage: true });
+  await page.locator('.monaco-editor .view-line').first().click();
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.evaluate(source => {
+    const clipboardData = new DataTransfer(); clipboardData.setData('text/plain', source);
+    document.activeElement.dispatchEvent(new ClipboardEvent('paste', { clipboardData, bubbles: true, cancelable: true }));
+  }, `${hello.solution}\n// edited\n`);
+  assert.equal(await page.locator('.practice-completion').count(), 0, 'practice edits immediately remove the previous success result');
+  assert.ok(JSON.parse(await fs.readFile(progressFile, 'utf8')).completed.includes(hello.id), 'editing does not erase earned practice progress');
+  await page.waitForFunction(() => document.querySelector('.editor-bar [role=status]')?.textContent === 'Saved');
+
+  await open('/projects');
+  await page.getByRole('heading', { name: 'Projects', exact: true }).waitFor();
+  assert.equal(await page.locator('.catalog-groups > section').last().getAttribute('id'), 'projects-review', 'finished projects follow every unfinished module');
+  assert.equal(await page.locator('.catalog-group:not(.catalog-review) .project-card.is-complete').count(), 0);
+  await page.getByRole('navigation', { name: 'Jump to project module', exact: true }).getByRole('button', { name: 'Review', exact: true }).click();
+  await page.locator('#projects-review').getByRole('heading', { name: projects[0].title, exact: true }).waitFor();
+  await page.screenshot({ path: path.join(fixture, 'projects-review-bottom.png'), fullPage: true });
+  assert.equal(await page.getByRole('link', { name: 'Assignments', exact: true }).count(), 0);
+  for (const project of projects) assert.equal(await page.getByRole('heading', { name: project.title, exact: true }).count(), 1);
+  await page.getByRole('button', { name: /^Supply Relay, locked\./ }).click();
+  await page.getByRole('dialog', { name: 'Requirements for Supply Relay', exact: true }).waitFor();
+  assert.ok(await page.locator('.lock-popover a').count() > 0, 'locked action explains the exact missing lessons');
+  await page.keyboard.press('Escape');
+  await page.screenshot({ path: path.join(fixture, 'projects-locked.png'), fullPage: true });
+  await open(`/game/${projects[0].id}`);
+  await page.getByRole('heading', { name: 'Finish first', exact: true }).waitFor();
+  assert.equal(await page.locator('.monaco-editor').count(), 0);
+  assert.equal(await fs.readFile(savedFile, 'utf8'), oldSource);
+  await open('/assignments');
+  await page.getByRole('heading', { name: 'Projects', exact: true }).waitFor();
+  assert.ok(page.url().endsWith('#/projects'));
+
+  await open('/games');
+  await page.getByRole('heading', { name: 'Projects', exact: true }).waitFor();
+  assert.ok(page.url().endsWith('#/projects'));
+  await open('/progress');
+  await page.locator('.roadmap-module').first().waitFor();
+  assert.equal(await page.locator('.roadmap-module').count(), 6);
+  await page.screenshot({ path: path.join(fixture, 'progress-light.png'), fullPage: true });
+  await open('/settings');
+  await page.getByText('Ready', { exact: true }).waitFor();
+  const studentBeforeDemo = await fs.readFile(progressFile, 'utf8');
+  for (const appearance of ['Dark', 'Light']) {
+    await page.getByRole('radio', { name: appearance, exact: true }).check();
+    await page.waitForFunction(value => document.documentElement.dataset.appearance === value, appearance.toLowerCase());
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    await page.locator('.settings-dashboard').evaluate(element => Promise.all(element.getAnimations({ subtree: true }).filter(animation => animation.effect.getTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {}))));
+    for (const control of [page.getByRole('radio', { name: appearance, exact: true }), page.locator('#default-arena'), page.getByRole('button', { name: 'Show save location', exact: true })]) await readableButton(control);
+    const ratios = await page.evaluate(() => {
+      const css = getComputedStyle(document.body);
+      const luminance = color => {
+        let hex = color.trim().replace('#', '');
+        if (hex.length === 3) hex = [...hex].map(c => c + c).join('');
+        const rgb = hex.match(/../g).map(value => parseInt(value, 16) / 255).map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+        return rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722;
+      };
+      return ['--paper', '--panel', '--lime'].flatMap(bg => ['--ink', '--muted', '--green'].map(fg => {
+        const values = [luminance(css.getPropertyValue(bg)), luminance(css.getPropertyValue(fg))].sort((a,b) => b-a);
+        return { bg, fg, ratio: (values[0] + .05) / (values[1] + .05) };
+      }));
+    });
+    for (const sample of ratios) assert.ok(sample.ratio >= 4.5, `${appearance} ${sample.fg} on ${sample.bg}: ${sample.ratio}`);
+    await page.screenshot({ path: path.join(fixture, `settings-${appearance.toLowerCase()}.png`), fullPage: true });
+    await open('/learn/hello-java');
+    await page.getByRole('button', { name: 'Take the quiz', exact: true }).waitFor();
+    await readableButton(page.getByRole('button', { name: 'Take the quiz', exact: true }));
+    await navigation();
+    await page.screenshot({ path: path.join(fixture, `lesson-explore-${appearance.toLowerCase()}.png`), fullPage: true });
+    await page.getByRole('button', { name: 'Take the quiz', exact: true }).click();
+    await page.getByRole('button', { name: 'Start practice', exact: true }).waitFor();
+    await readableButton(page.getByRole('button', { name: 'Start practice', exact: true }));
+    await navigation();
+    await page.screenshot({ path: path.join(fixture, `lesson-quiz-${appearance.toLowerCase()}.png`), fullPage: true });
+    await open('/settings');
+    await page.getByText('Ready', { exact: true }).waitFor();
+  }
+  await page.getByRole('switch', { name: 'Demo mode', exact: true }).click();
+  await page.locator('.demo-banner').waitFor();
+  await open('/quiz/precision-parking');
+  await page.locator('.quiz-context').waitFor();
+  const parkingContext = await page.locator('.quiz-context').innerText();
+  for (const value of ['0.25', '25', '100']) assert.ok(parkingContext.includes(value), `parking quiz includes ${value} before asking for time`);
+  assert.ok(await page.getByRole('radio').count() >= 2, 'the calculation context and answer choices are available together');
+  await open(`/game/${projects[0].id}`);
+  await page.getByRole('button', { name: 'Skip refresher', exact: true }).click();
+  await page.locator('.monaco-editor .view-line').first().waitFor();
+  await page.getByRole('button', { name: 'Insert solution', exact: true }).click();
+  await page.getByRole('button', { name: 'Inserting…', exact: true }).waitFor({ state: 'detached' });
+  const demoRoot = await page.evaluate(async () => (await (await import('/src/platform.js')).runtimeInfo()).workspace);
+  assert.notEqual(demoRoot, student);
+  await page.waitForFunction(() => document.querySelector('.editor-bar [role=status]')?.textContent === 'Saved');
+  assert.equal(await fs.readFile(path.join(demoRoot, gameSourcePath(projects[0].id)), 'utf8'), withPackage(projects[0].solution, gamePackage(projects[0].id)));
+  const insertedSource = await page.evaluate(async () => {
+    const source = await (await fetch('/src/editor.jsx')).text();
+    const monaco = await import(source.match(/import \* as monaco from ["']([^"']+)["']/)[1]);
+    return monaco.editor.getEditors()[0].getValue();
+  });
+  assert.equal(insertedSource, withPackage(projects[0].solution, gamePackage(projects[0].id)), 'demo insertion updates the editor while user input is temporarily read-only');
+  await page.locator('#run').click();
+  await page.locator('.game-submission').getByRole('heading', { name: 'Perfect', exact: true }).waitFor({ timeout: 120000 });
+  assert.equal(await fs.readFile(savedFile, 'utf8'), oldSource, 'demo edits never touch student Java');
+  assert.equal(await fs.readFile(progressFile, 'utf8'), studentBeforeDemo, 'demo does not award or alter student progress');
+  await open('/practice/hello-java');
+  await page.locator('.monaco-editor .view-line').first().waitFor();
+  await page.getByRole('button', { name: 'Insert solution', exact: true }).click();
+  await page.locator('#run').click();
+  await page.locator('.practice-completion').waitFor({ timeout: 60000 });
+  assert.equal(await fs.readFile(progressFile, 'utf8'), studentBeforeDemo, 'demo lesson solution does not change student progress');
+  await open('/settings');
+  await page.getByText('Ready', { exact: true }).waitFor();
+  await page.getByRole('switch', { name: 'Demo mode', exact: true }).click();
+  await page.locator('.demo-banner').waitFor({ state: 'detached' });
+  await open(`/game/${projects[0].id}`);
+  await page.getByRole('heading', { name: 'Finish first', exact: true }).waitFor();
+
+  await fs.writeFile(progressFile, JSON.stringify(normalizeProgress({ completed: lessons.filter(lesson => !lesson.independent).map(lesson => lesson.id), drafts: { [projects[0].id]: oldSource } })));
+  await page.reload();
+  for (const project of projects) {
+    await open(`/game/${project.id}`);
+    await page.locator('.project-refresher-screen').waitFor();
+    await navigation();
+    assert.equal(await page.locator('.monaco-editor').count(), 0, 'refresher is separate from the project workspace');
+    for (const [i, question] of project.refresher.entries()) {
+      assert.equal(await page.locator('.project-refresher .java-code').count(), 1, 'only the current code check is shown');
+      await page.locator('.project-refresher').getByRole('radio').nth(question.answer).check();
+      await page.locator('.project-refresher .quiz-feedback.passed').waitFor();
+      await page.screenshot({ path: path.join(fixture, `${project.id}-quiz-${i + 1}.png`), fullPage: true });
+      await page.getByRole('navigation', { name: 'Refresher steps', exact: true }).getByRole('button', { name: i === project.refresher.length - 1 ? 'Start project' : 'Next', exact: true }).click();
+    }
+    await page.locator('.monaco-editor .view-line').first().waitFor();
+    assert.equal(await page.locator('.project-refresher').count(), 0);
+    await page.locator('#scene canvas').waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Map', exact: true }).isVisible(), true, '3D opens first with the precise map available');
+    assert.equal(await page.getByRole('button', { name: 'Insert solution', exact: true }).count(), 0, 'solutions are hidden outside demo');
+    assert.equal(await page.locator('.editor-bar button').count(), 0, 'project has one graded Run action');
+    await readableButton(page.locator('#run'));
+    const runBox = await page.locator('#run').boundingBox(), trialBox = await page.getByRole('button', { name: 'Run', exact: true }).boundingBox();
+    assert.ok(Math.abs(runBox.height - trialBox.height) < 1 && runBox.height >= 44, 'Run and Submit have matching, comfortable heights');
+    for (const name of ['Commands', 'Checklist', 'Run']) await readableButton(page.getByRole('button', { name, exact: true }));
+    await page.getByRole('button', { name: 'Commands', exact: true }).click();
+    await page.getByRole('dialog').getByRole('heading', { name: 'pipMove', exact: true }).waitFor();
+    assert.ok(await page.locator('.command-reference .tok-string').count() > 0);
+    await page.getByRole('button', { name: 'Close commands', exact: true }).click();
+    await page.setViewportSize({ width: 900, height: 600 });
+    await page.getByRole('button', { name: 'Checklist', exact: true }).click();
+    await page.getByRole('checkbox', { name: 'Mark step 1 done', exact: true }).check();
+    const checklistNext = await page.getByRole('navigation', { name: 'Project steps', exact: true }).getByRole('button', { name: 'Next', exact: true }).boundingBox();
+    assert.ok(checklistNext.y + checklistNext.height <= 600, 'checklist navigation remains in view');
+    await page.screenshot({ path: path.join(fixture, `${project.id}-checklist.png`), fullPage: true });
+    await page.getByRole('button', { name: 'Close checklist', exact: true }).click();
+    await page.setViewportSize({ width: 900, height: 600 });
+    const worldBox = await page.locator('.world-stage').boundingBox(), editorBox = await page.locator('.monaco-editor').boundingBox();
+    assert.ok(worldBox.height >= 180 && worldBox.y + worldBox.height <= 600, `${project.id}: world stays visible`);
+    assert.ok(editorBox.height >= 260 && editorBox.width >= 250, `${project.id}: editor stays usable`);
+    assert.ok(worldBox.x + worldBox.width <= editorBox.x + 1, 'world and editor stay side by side');
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'project toolbar fits the minimum window');
+    await page.screenshot({ path: path.join(fixture, `${project.id}-brief.png`), fullPage: true });
+    for (const name of ['Description', 'World', 'Submission', 'Testcase', 'Test Result']) {
+      const tab = page.getByRole('tab', { name, exact: true });
+      assert.equal(await tab.locator('.rt-TabsTriggerInner > .icon').count(), 1, `${name} has one visible SVG icon`);
+    }
+    if (project.id === 'supply-relay') {
+      const savedBeforeExample = await fs.readFile(savedFile, 'utf8'), progressBeforeExample = await fs.readFile(progressFile, 'utf8');
+      await page.getByRole('tab', { name: 'Description', exact: true }).click();
+      const inputBeforeExample = await page.locator('.game-example .case-input').innerText();
+      assert.equal(await page.locator('.game-example-output').count(), 0, 'example output is loaded only when requested');
+      await page.getByRole('button', { name: 'Play demo', exact: true }).click();
+      await page.locator('.game-example-output pre').waitFor({ timeout: 60000 });
+      assert.ok((await page.locator('.game-example-output pre').innerText()).trim().length > 0);
+      assert.equal(await page.locator('.game-example .case-input').innerText(), inputBeforeExample, 'the demonstrated input matches the displayed example');
+      assert.equal(await fs.readFile(savedFile, 'utf8'), savedBeforeExample, 'Play demo preserves student Java exactly');
+      assert.equal(await fs.readFile(progressFile, 'utf8'), progressBeforeExample, 'Play demo awards no progress or checklist credit');
+      await page.locator('.game-example-stage .playback-tools select').selectOption('4');
+      await page.locator('.game-example-stage .replay-transcript li').first().waitFor();
+      await page.locator('.game-example-stage').scrollIntoViewIfNeeded();
+      await page.screenshot({ path: path.join(fixture, 'project-example-light.png'), fullPage: true });
+      await page.getByRole('tab', { name: 'Submission', exact: true }).click();
+      assert.equal(await page.locator('.game-submission h2').count(), 0, 'the reference example never becomes a student submission');
+      await page.getByRole('tab', { name: 'World', exact: true }).click();
+      assert.equal(await page.locator('.world-stage .replay-transcript li').count(), 0, 'example speech stays separate from the student world');
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
+  await open(`/game/${projects[0].id}`);
+  await page.locator('.monaco-editor').waitFor();
+  assert.equal(await fs.readFile(savedFile, 'utf8'), oldSource, 'opening and reviewing preserve existing Java exactly');
+  await page.getByRole('button', { name: 'Checklist', exact: true }).click();
+  assert.equal(await page.getByRole('checkbox', { name: 'Mark step 1 done', exact: true }).isChecked(), true, 'milestone survives reopening');
+  await page.getByRole('button', { name: 'Close checklist', exact: true }).click();
+
+  await page.locator('.project-checklist').waitFor({ state: 'detached' });
+  // Position through Monaco's public API; edits and acceptance still use real keys.
+  // This avoids depending on an optional Go to Line feature and keeps given inputs intact.
+  await page.evaluate(async () => {
+    const source = await (await fetch('/src/editor.jsx')).text();
+    const url = source.match(/import \* as monaco from ["']([^"']+)["']/)?.[1];
+    if (!url) throw new Error('Monaco import not found');
+    const monaco = await import(url), editor = monaco.editor.getEditors()[0], model = editor.getModel();
+    window.fixtureMonaco = monaco;
+    const line = model.getValue().split('\n').findIndex(value => value.includes('// Print commands')) + 1;
+    if (!line) throw new Error('Editable command location not found');
+    editor.setPosition({ lineNumber: line, column: model.getLineMaxColumn(line) });
+    editor.revealLineInCenter(line); editor.focus();
+  });
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('pipMo');
+  const completionPosition = await page.evaluate(() => {
+    const editor = window.fixtureMonaco.editor.getEditors()[0], model = editor.getModel(), position = editor.getPosition();
+    editor.trigger('test', 'editor.action.triggerSuggest', {});
+    return { source: model.getValue(), position, focused: editor.hasTextFocus() };
+  });
+  assert.equal(completionPosition.focused, true, 'editor focus is restored after Checklist closes');
+  assert.equal(completionPosition.source.split('\n')[completionPosition.position.lineNumber - 1].trim(), 'pipMo');
+  assert.ok(completionPosition.source.indexOf('pipMo') < completionPosition.source.indexOf('System.out.println("Delivered'), 'completion runs inside main before the existing output');
+  await page.getByText('pipMove', { exact: true }).waitFor();
+  await page.keyboard.press('Enter');
+  await page.screenshot({ path: path.join(fixture, 'desktop-autocomplete.png'), fullPage: true });
+  await page.waitForFunction(() => document.querySelector('.editor-bar [role=status]')?.textContent === 'Saved');
+  assert.match(await fs.readFile(savedFile, 'utf8'), /System\.out\.println\("move 3"\);/);
+
+  await fs.writeFile(savedFile, withPackage(projects[0].solution, gamePackage(projects[0].id)));
+  await page.reload(); await page.locator('.monaco-editor').waitFor();
+  await page.getByRole('button', { name: 'Run', exact: true }).click();
+  await page.locator('[aria-label="Game run results"] .case-output pre').waitFor({ timeout: 60000 });
+  assert.equal(await page.locator('[aria-label="Game run results"] .run-verdict h2').innerText(), 'Passed');
+  await page.getByRole('combobox', { name: 'Choose a world to replay', exact: true }).click();
+  assert.equal(await page.getByRole('option', { selected: true }).locator('svg').count(), 1, 'world menu has only Radix’s selection check');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Expand test results', exact: true }).click();
+  assert.equal(await page.locator('.monaco-editor').isVisible(), false);
+  assert.equal(await page.locator('.world-stage').isVisible(), true, 'project world stays visible while results expand');
+  await page.getByRole('button', { name: 'Restore editor', exact: true }).click();
+  assert.equal(await page.locator('.monaco-editor').isVisible(), true);
+  assert.equal(JSON.parse(await fs.readFile(progressFile, 'utf8')).games[projects[0].id]?.stars || 0, 0);
+  await page.getByRole('button', { name: 'Checklist', exact: true }).click();
+  assert.equal(await page.getByRole('checkbox', { name: 'Mark step 1 done', exact: true }).isChecked(), true, 'Run preserves the manual planning check');
+  for (const step of [2, 3]) assert.equal(await page.getByRole('checkbox', { name: `Mark step ${step} done`, exact: true }).isChecked(), true, 'public Run verifies visible pickup and delivery actions');
+  for (const step of [4, 5]) assert.equal(await page.getByRole('checkbox', { name: `Mark step ${step} done`, exact: true }).isChecked(), false, 'public Run does not verify hidden calculations or manual explanation');
+  await page.getByRole('button', { name: 'Close checklist', exact: true }).click();
+  await page.locator('#run').click();
+  await page.locator('.game-submission').getByRole('heading', { name: 'Perfect', exact: true }).waitFor({ timeout: 120000 });
+  assert.equal(JSON.parse(await fs.readFile(progressFile, 'utf8')).games[projects[0].id].stars, 1);
+  await page.getByRole('button', { name: 'Checklist', exact: true }).click();
+  assert.equal(await page.getByRole('checkbox', { name: 'Mark step 4 done', exact: true }).isChecked(), true, 'changed energy settings verify the calculation step');
+  assert.equal(await page.getByRole('checkbox', { name: 'Mark step 5 done', exact: true }).isChecked(), false, 'explanation and deliberate failure review remain manual');
+  await page.locator('.project-checklist').evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished.catch(() => {}))));
+  await page.locator('#celebration').waitFor({ state: 'hidden' });
+  await page.screenshot({ path: path.join(fixture, 'project-automatic-checklist.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Close checklist', exact: true }).click();
+  await page.screenshot({ path: path.join(fixture, 'project-complete.png'), fullPage: true });
+  for (const project of projects.filter(project => project.inputHelp)) {
+    const file = path.join(student, gameSourcePath(project.id));
+    await fs.writeFile(file, withPackage(project.solution, gamePackage(project.id)));
+    await open(`/game/${project.id}`);
+    await page.locator('.monaco-editor').waitFor();
+    await page.getByRole('button', { name: 'Run', exact: true }).click();
+    await page.locator('[aria-label="Game run results"] .case-output pre').waitFor({ timeout: 60000 });
+    assert.equal(JSON.parse(await fs.readFile(progressFile, 'utf8')).games[project.id]?.stars || 0, 0);
+    await page.locator('#run').click();
+    await page.locator('.game-submission').getByRole('heading', { name: 'Perfect', exact: true }).waitFor({ timeout: 120000 });
+    await page.getByRole('tab', { name: 'World', exact: true }).click();
+    await page.getByRole('button', { name: 'Details', exact: true }).click();
+    assert.ok((await page.getByRole('dialog', { name: 'Run details', exact: true }).locator('.replay-input pre').first().innerText()).trim().length > 0);
+    await page.getByRole('button', { name: 'Close run details', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Run details', exact: true }).waitFor({ state: 'detached' });
+    await page.getByRole('button', { name: 'Map', exact: true }).click();
+    await page.locator('.tile-board').waitFor();
+    assert.ok(await page.locator('.tile-finish').count() > 0);
+  }
+  // Correctness is independent of the optional action-count star.
+  const greetingGame = games.find(game => game.id === 'hello-arena');
+  const greetingFile = path.join(student, gameSourcePath(greetingGame.id));
+  const overPar = withPackage(greetingGame.solution.replace('System.out.println("Hello, Arena!");', 'System.out.println("Hello, Arena!");\n        System.out.println("Hello again!");'), gamePackage(greetingGame.id));
+  await fs.mkdir(path.dirname(greetingFile), { recursive: true }); await fs.writeFile(greetingFile, overPar);
+  await open('/game/hello-arena'); await page.locator('.monaco-editor .view-line').first().waitFor();
+  await page.evaluate(async () => {
+    const source = await (await fetch('/src/editor.jsx')).text();
+    const monaco = await import(source.match(/import \* as monaco from ["']([^"']+)["']/)[1]);
+    window.fixtureMonaco = monaco;
+  });
+  await page.getByRole('button', { name: 'Submit', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop', exact: true }).waitFor();
+  const judgingReadOnly = await page.evaluate(() => {
+    const editor = window.fixtureMonaco.editor.getEditors()[0]; editor.focus();
+    return editor.getOption(window.fixtureMonaco.editor.EditorOption.readOnly);
+  });
+  assert.equal(judgingReadOnly, true, 'game source is read-only during judging');
+  await page.keyboard.type('blocked edit');
+  assert.equal(await page.evaluate(() => window.fixtureMonaco.editor.getEditors()[0].getValue()), overPar, 'typing during judging changes no source');
+  await page.locator('.game-submission').getByRole('heading', { name: 'Perfect', exact: true }).waitFor({ timeout: 120000 });
+  assert.match(await page.locator('.game-submission .submission-count').innerText(), /40 \/ 40/);
+  assert.equal(JSON.parse(await fs.readFile(progressFile, 'utf8')).games[greetingGame.id].stars, 2, 'correct over-par code keeps its separate two-star award');
+  await page.screenshot({ path: path.join(fixture, 'game-correct-over-par.png'), fullPage: true });
+  await page.evaluate(() => { const editor = window.fixtureMonaco.editor.getEditors()[0]; editor.setPosition({ lineNumber: 1, column: 1 }); editor.focus(); });
+  await page.keyboard.type('// edited\n');
+  assert.equal(await page.locator('.game-submission h2').count(), 0, 'accepted edit immediately clears the displayed judgement');
+  await page.waitForFunction(() => document.querySelector('.editor-bar [role=status]')?.textContent === 'Saved');
+  await page.getByRole('link', { name: 'Projects', exact: true }).click();
+  await page.getByRole('link', { name: 'Reopen Hello Arena', exact: true }).click();
+  await page.locator('.monaco-editor').waitFor();
+  await page.getByRole('tab', { name: 'Submission', exact: true }).click();
+  assert.equal(await page.locator('.game-submission h2').count(), 0, 'reopening within the same app cannot restore a stale cached judgement');
+  assert.equal(JSON.parse(await fs.readFile(progressFile, 'utf8')).games[greetingGame.id].stars, 2, 'editing preserves earned progress');
+  const hoop = games.find(game => game.id === 'hoop-streak'), hoopFile = path.join(student, gameSourcePath(hoop.id));
+  const shopping = hoop.starter.replace('// Ask the shopkeeper for the balls, then turn left and shoot once per basket.', 'System.out.println("Can I have " + baskets + " balls?");');
+  await fs.mkdir(path.dirname(hoopFile), { recursive: true });
+  await fs.writeFile(hoopFile, withPackage(shopping, gamePackage(hoop.id)));
+  await open('/game/hoop-streak');
+  await page.locator('.monaco-editor .view-line').first().waitFor();
+  await page.getByRole('button', { name: 'Commands', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Commands', exact: true }).getByRole('heading', { name: 'pipRequestBalls', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Close commands', exact: true }).click();
+  await page.getByRole('button', { name: 'Details', exact: true }).click();
+  const sampleInput = await page.getByRole('dialog', { name: 'Run details', exact: true }).locator('.replay-input pre').innerText();
+  await page.getByRole('button', { name: 'Close run details', exact: true }).click();
+  await page.getByRole('button', { name: 'Run', exact: true }).click();
+  await page.locator('[aria-label="Game run results"] .case-output pre').waitFor({ timeout: 60000 });
+  await page.getByRole('button', { name: 'Details', exact: true }).click();
+  assert.equal((await page.getByRole('dialog', { name: 'Run details', exact: true }).locator('.replay-input pre').innerText()).trim(), sampleInput.trim(), 'Hoop trial input matches the pictured board');
+  await page.getByRole('button', { name: 'Close run details', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Run details', exact: true }).waitFor({ state: 'detached' });
+  assert.equal(JSON.parse(await fs.readFile(progressFile, 'utf8')).games[hoop.id]?.stars || 0, 0, 'an unfinished shopping trial never awards stars');
+  await page.setViewportSize({ width: 900, height: 600 });
+  await navigation();
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Hoop Streak fits the minimum desktop window');
+  await page.screenshot({ path: path.join(fixture, 'hoop-trial-narrow.png'), fullPage: true });
+  await page.setViewportSize({ width: 900, height: 600 });
+  for (const route of ['/', '/projects', '/progress', '/settings']) {
+    await open(route);
+    await page.locator('main.page-shell').waitFor();
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${route} must fit a 900px desktop window`);
+    await page.screenshot({ path: path.join(fixture, `narrow-${route.slice(1) || 'course'}.png`), fullPage: true });
+  }
+  // Challenge mode shares the real host/editor, but removes instructional assistance.
+  for (const unit of ['basics', 'loops', 'methods', 'decisions', 'arrays']) {
+    await open(`/module/${unit}`);
+    await page.locator('.challenge-card').first().waitFor();
+    assert.equal(await page.locator('.challenge-card').count(), 2);
+    assert.equal(await page.locator('.challenge-card').getByRole('link', { name: /^Start challenge:/ }).count(), 2);
+    const sections = page.getByRole('navigation', { name: 'Module sections', exact: true });
+    assert.deepEqual(await sections.getByRole('button').allTextContents(), ['Lessons', 'Projects', 'Challenges']);
+    for (const label of ['Projects', 'Challenges', 'Lessons']) {
+      await sections.getByRole('button', { name: label, exact: true }).click();
+      const heading = page.locator(`#module-${label.toLowerCase()}-heading`);
+      await heading.waitFor();
+      assert.equal(await heading.evaluate(element => element === document.activeElement), true, 'section navigation moves keyboard focus');
+      const box = await heading.boundingBox();
+      assert.ok(box.y >= 56 && box.y < 600, 'target heading stays visible below the app navigation');
+      assert.ok((await sections.boundingBox()).y >= 56, 'module navigation remains available while scrolling');
+    }
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'module sidebar fits at 900px');
+  }
+  await open('/module/finish');
+  assert.equal(await page.getByRole('navigation', { name: 'Module sections', exact: true }).getByRole('button', { name: 'Challenges', exact: true }).count(), 0, 'do not link to an absent section');
+  await open('/module/basics');
+  await page.locator('.challenge-card').first().getByRole('link', { name: /^Start challenge:/ }).click();
+  await page.locator('.challenge-workspace .monaco-editor .view-line').first().waitFor();
+  await navigation();
+  assert.equal(await page.getByRole('button', { name: /hint|solution/i }).count(), 0);
+  assert.equal(await page.locator('.flow-step, .learning-drawer').count(), 0);
+  const challengeFile = path.join(student, 'src', ...lessonPackage(challenge.id).split('.'), 'Student.java');
+  const savedChallenge = await fs.readFile(challengeFile, 'utf8');
+  await open(`/learn/${challenge.id}`);
+  await page.waitForURL(`**/#/challenge/${challenge.id}`);
+  await page.locator('.monaco-editor .view-line').first().waitFor();
+  assert.equal(await fs.readFile(challengeFile, 'utf8'), savedChallenge, 'reopening keeps saved challenge Java');
+  assert.ok(await page.locator('.monaco-editor .view-lines').evaluate(element => new Set([...element.querySelectorAll('span')].map(span => getComputedStyle(span).color)).size) >= 3, 'Java syntax remains highlighted');
+  for (const control of await page.locator('.challenge-actions button').all()) {
+    assert.ok((await control.boundingBox()).height >= 44);
+    await readableButton(control);
+  }
+  assert.equal(await page.getByText(/Solve independently/).count(), 0, 'challenge actions need no instructional banner');
+  const runBox = await page.getByRole('button', { name: 'Run', exact: true }).boundingBox();
+  const submitBox = await page.getByRole('button', { name: 'Submit', exact: true }).boundingBox();
+  assert.equal(runBox.y, submitBox.y, 'Run and Submit share the compact toolbar');
+  assert.ok(await page.locator('.app-topbar .challenge-actions').count());
+  const editChallenge = async source => {
+    await page.locator('.monaco-editor .view-line').first().click();
+    await page.keyboard.press('ControlOrMeta+A');
+    await page.keyboard.insertText(source);
+    await page.getByText('Unsaved changes', { exact: true }).waitFor();
+    await page.waitForFunction(() => document.querySelector('.editor-bar [role=status]')?.textContent === 'Saved');
+  };
+  const completionBefore = completionRequests;
+  await editChallenge('public class Student { public static void main(String[] args) { System.out.\n} }');
+  await page.keyboard.press('ArrowUp'); await page.keyboard.press('End');
+  await page.keyboard.press('Control+Space');
+  await page.locator('.squiggly-error').first().waitFor({ timeout: 15000 });
+  assert.equal(completionRequests, completionBefore, 'challenge editor never requests autocomplete, including Ctrl+Space');
+  assert.equal(await page.locator('.suggest-widget .monaco-list-row').count(), 0, 'no Java or robot snippets are offered');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Submit', exact: true }).click();
+  await page.locator('.challenge-result pre[role=alert]').waitFor({ timeout: 60000 });
+  assert.match(await page.locator('.challenge-result pre[role=alert]').innerText(), /error:/);
+  assert.ok(!JSON.parse(await fs.readFile(progressFile, 'utf8')).completed.includes(challenge.id));
+  await page.screenshot({ path: path.join(fixture, 'challenge-compiler-error.png'), fullPage: true });
+  await editChallenge('public class Student {}');
+  assert.equal(await page.locator('.challenge-result pre[role=alert]').count(), 0, 'editing clears obsolete compiler results');
+  const runtimeFailure = challenge.solution.replace('public static void main(String[] args) {', 'public static void main(String[] args) {\n        int zero = 0;\n        System.out.println(1 / zero);');
+  await fs.writeFile(challengeFile, withPackage(runtimeFailure, lessonPackage(challenge.id)));
+  await page.reload(); await page.locator('.monaco-editor .view-line').first().waitFor();
+  await page.getByRole('button', { name: 'Run', exact: true }).click();
+  await page.locator('.challenge-run-result > pre[role=alert]').waitFor({ timeout: 60000 });
+  assert.match(await page.locator('.challenge-run-result > pre[role=alert]').innerText(), /ArithmeticException/);
+  assert.match(await page.locator('.challenge-run-result .case-input pre').innerText(), /energy/);
+  assert.equal(await page.getByRole('group', { name: 'Public test cases', exact: true }).getByRole('button').count(), 3, 'an early exception preserves all public inputs');
+  await page.getByRole('group', { name: 'Public test cases', exact: true }).getByRole('button', { name: /Case 2/ }).click();
+  assert.equal(await page.locator('.challenge-run-result .case-output').count(), 0, 'unexecuted cases do not claim an output');
+  await page.screenshot({ path: path.join(fixture, 'challenge-runtime-input.png'), fullPage: true });
+  const warningSource = challenge.solution.replace('public static void main(String[] args) {', 'public static void main(String[] args) {\n        java.util.List raw = new java.util.ArrayList();');
+  await fs.writeFile(challengeFile, withPackage(warningSource, lessonPackage(challenge.id)));
+  await page.reload(); await page.locator('.monaco-editor .view-line').first().waitFor();
+  await page.getByRole('button', { name: 'Submit', exact: true }).click();
+  await page.locator('.challenge-submission').getByRole('heading', { name: 'Accepted', exact: true }).waitFor({ timeout: 120000 });
+  assert.ok(JSON.parse(await fs.readFile(progressFile, 'utf8')).completed.includes(challenge.id), 'correct code with warnings still passes');
+  await page.locator('.submission-quality summary').click();
+  assert.match(await page.locator('.submission-quality').innerText(), /compiler warnings?/);
+  assert.match(await page.locator('.submission-quality pre').first().innerText(), /raw|generic/i);
+  await page.screenshot({ path: path.join(fixture, 'challenge-compiler-warnings.png'), fullPage: true });
+  // Clear only this fixture's awarded pass so the following public-Run assertion remains meaningful.
+  const warningProgress = JSON.parse(await fs.readFile(progressFile, 'utf8'));
+  warningProgress.completed = warningProgress.completed.filter(id => id !== challenge.id);
+  delete warningProgress.assessments[challenge.id];
+  await fs.writeFile(progressFile, JSON.stringify(warningProgress));
+  await fs.writeFile(challengeFile, withPackage(challenge.solution, lessonPackage(challenge.id)));
+  await page.reload(); await page.locator('.monaco-editor .view-line').first().waitFor();
+  await page.getByRole('button', { name: 'Run', exact: true }).click();
+  await page.locator('.challenge-run-result .case-output pre').waitFor({ timeout: 60000 });
+  assert.equal(await page.getByRole('group', { name: 'Public test cases', exact: true }).getByRole('button').count(), 3);
+  assert.equal(await page.getByRole('tab', { name: 'Description', exact: true }).getAttribute('aria-selected'), 'true');
+  await page.getByRole('button', { name: 'Expand test results', exact: true }).click();
+  assert.equal(await page.locator('.monaco-editor').isVisible(), false, 'expanding results uses the code pane without losing its editor');
+  await page.locator('.challenge-run-result').evaluate(element => { element.parentElement.scrollTop = 0; });
+  await page.screenshot({ path: path.join(fixture, 'challenge-expanded-results.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Restore editor', exact: true }).click();
+  assert.equal(await page.locator('.monaco-editor').isVisible(), true, 'Restore returns the same editor');
+  assert.equal(await page.locator('.challenge-run-result .run-verdict h2').innerText(), 'Passed');
+  const caseChip = await page.locator('.challenge-run-result .challenge-case-tabs button').first().boundingBox();
+  assert.ok(caseChip.height <= 32 && caseChip.width <= 95, 'test cases use compact chips');
+  const caseFields = await page.locator('.challenge-run-result .challenge-case-values > div').evaluateAll(elements => elements.map(element => { const r = element.getBoundingClientRect(); return { y:r.y, height:r.height, width:r.width }; }));
+  assert.ok(caseFields[1].y >= caseFields[0].y + caseFields[0].height && caseFields[1].width >= caseFields[0].width - 1, 'input and output stack at full width');
+  assert.equal((await page.locator('.challenge-run-result .case-output pre').innerText()).trim(), challenge.publicCases[0].expected);
+  assert.ok((await page.locator('.challenge-run-result .case-input pre').innerText()).includes('energy'));
+  assert.equal((await page.locator('.challenge-run-result .case-expected pre').innerText()).trim(), challenge.publicCases[0].expected);
+  assert.ok(!JSON.parse(await fs.readFile(progressFile, 'utf8')).completed.includes(challenge.id), 'Run does not award a pass');
+  await page.getByRole('button', { name: 'Submit', exact: true }).click();
+  await page.locator('.challenge-submission').getByRole('heading', { name: 'Perfect', exact: true }).waitFor({ timeout: 120000 });
+  assert.equal(await page.getByRole('tab', { name: 'Submission', exact: true }).getAttribute('aria-selected'), 'true');
+  assert.ok(JSON.parse(await fs.readFile(progressFile, 'utf8')).completed.includes(challenge.id), 'Submit records successful checks');
+  const oldChallengeProgress = JSON.parse(await fs.readFile(progressFile, 'utf8'));
+  oldChallengeProgress.assessments[challenge.id] = challenge.assessmentVersion - 1;
+  await fs.writeFile(progressFile, JSON.stringify(oldChallengeProgress));
+  const revisedSource = await fs.readFile(challengeFile, 'utf8');
+  await open('/module/basics');
+  await page.reload(); // Load the older record as an app restart would.
+  await page.locator('.challenge-card').filter({ has: page.getByRole('heading', { name: challenge.title, exact: true }) }).getByRole('link', { name: /^Start challenge:/ }).waitFor();
+  assert.equal(await fs.readFile(challengeFile, 'utf8'), revisedSource, 'a new pass requirement keeps saved Java');
+  assert.ok(JSON.parse(await fs.readFile(progressFile, 'utf8')).completed.includes(challenge.id), 'earlier completion record stays saved');
+  await open(`/challenge/${challenge.id}`);
+  await page.locator('.monaco-editor .view-line').first().waitFor();
+  await page.getByRole('button', { name: 'Submit', exact: true }).click();
+  await page.locator('.challenge-submission').getByRole('heading', { name: 'Perfect', exact: true }).waitFor({ timeout: 120000 });
+  assert.equal(await page.getByRole('tab', { name: 'Submission', exact: true }).getAttribute('aria-selected'), 'true');
+  assert.equal(JSON.parse(await fs.readFile(progressFile, 'utf8')).assessments[challenge.id], challenge.assessmentVersion);
+  for (const appearance of ['dark', 'light']) {
+    await open('/settings');
+    await page.getByRole('radio', { name: appearance === 'dark' ? 'Dark' : 'Light', exact: true }).check();
+    await open(`/challenge/${challenge.id}`);
+    await page.locator('.monaco-editor .view-line').first().waitFor();
+    const box = await page.locator('.monaco-editor').boundingBox();
+    assert.ok(box.height >= 260 && box.width >= 250 && box.y + box.height <= 601, 'challenge editor fits the minimum desktop window');
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'challenge content cannot overflow horizontally');
+    await readableButton(page.getByRole('button', { name: 'Submit', exact: true }));
+    await page.screenshot({ path: path.join(fixture, `challenge-passed-${appearance}.png`), fullPage: true });
+    await open('/module/basics');
+    assert.equal(await page.locator('.challenge-card').last().getByRole('heading').innerText(), challenge.title, 'passed challenge moves behind unfinished challenge');
+    await page.getByRole('navigation', { name: 'Module sections', exact: true }).getByRole('button', { name: 'Challenges', exact: true }).click();
+    for (const heading of await page.locator('.module-content > section > h2').all()) await readableButton(heading);
+    await page.screenshot({ path: path.join(fixture, `module-sidebar-${appearance}.png`) });
+    await page.locator('.module-challenges').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(fixture, `challenge-cards-${appearance}.png`), fullPage: true });
+    await open('/learn/java-for');
+    const comparison = page.getByRole('combobox', { name: 'Loop comparison', exact: true });
+    await comparison.waitFor();
+    assert.ok((await comparison.locator('.rt-SelectTriggerInner').boundingBox()).width > 50, 'comparison text must have visible space beside its arrow');
+    assert.equal(await comparison.locator('code').innerText(), 'i <= count');
+    assert.ok(await comparison.locator('.tok-variable').count() > 0);
+    assert.ok(await comparison.locator('.tok-operator').count() > 0);
+    await comparison.click();
+    await page.getByRole('option', { name: 'i < count', exact: true }).click();
+    assert.equal(await comparison.locator('code').innerText(), 'i < count');
+    assert.ok(await page.locator('.java-code .tok-keyword').count() > 0, 'lesson examples are syntax highlighted');
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.screenshot({ path: path.join(fixture, `loop-code-${appearance}.png`), fullPage: true });
+    for (const item of independentChallenges) {
+      await open(`/challenge/${item.id}`);
+      await page.getByRole('tab', { name: 'Description', exact: true }).click();
+      await page.getByRole('heading', { name: item.title, exact: true }).waitFor();
+      await page.locator('.monaco-editor .view-line').first().waitFor();
+      assert.equal(await page.locator('.challenge-example').count(), 2);
+      assert.equal(await page.getByRole('button', { name: /hint|solution/i }).count(), 0);
+      await page.getByRole('tab', { name: 'Testcase', exact: true }).click();
+      assert.equal(await page.getByRole('group', { name: 'Public test cases', exact: true }).getByRole('button').count(), 3);
+      if (item.publicCases[0].input) assert.equal((await page.locator('.challenge-case-content .case-input pre').innerText()).trim(), item.publicCases[0].input, 'stdin public test shows its exact input');
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${item.id} fits the window`);
+      const codeBox = await page.locator('.monaco-editor').boundingBox();
+      assert.ok(codeBox.height >= 260 && codeBox.width >= 250, `${item.id} keeps room for code`);
+      await page.screenshot({ path: path.join(fixture, `${item.id}-${appearance}.png`), fullPage: true });
+    }
+  }
+  await open('/');
+  await page.getByRole('progressbar', { name: 'Coding practice: 39 of 39 coding practices passed', exact: true }).waitFor();
+  const repair = lessons.find(lesson => lesson.parts?.length === 5);
+  await fs.writeFile(progressFile, JSON.stringify(normalizeProgress({ completed: [hello.id, ...repair.parts.slice(0, 2)] })));
+  await page.reload();
+  for (const appearance of ['dark', 'light']) {
+    await open('/settings');
+    await page.getByRole('radio', { name: appearance === 'dark' ? 'Dark' : 'Light', exact: true }).check();
+    await page.waitForFunction(value => document.documentElement.dataset.appearance === value, appearance);
+    await open('/');
+    await page.getByRole('progressbar', { name: 'Coding practice: 3 of 39 coding practices passed', exact: true }).waitFor();
+    await page.screenshot({ path: path.join(fixture, `course-partial-${appearance}.png`), fullPage: true });
+    await page.getByRole('link', { name: 'Java basics', exact: true }).click();
+    await page.getByRole('progressbar', { name: 'Coding practice: 3 of 13 coding practices passed', exact: true }).waitFor();
+    await page.getByText('2 / 5 parts', { exact: true }).waitFor();
+    assert.equal(await page.locator('.module-lessons .project-card').count(), 0);
+    await page.screenshot({ path: path.join(fixture, `module-partial-${appearance}.png`), fullPage: true });
+    assert.equal(await page.locator('.module-lessons details').count(), 0, 'lesson review uses tabs instead of a disclosure');
+    assert.equal(await page.locator('.module-lessons').getByRole('heading', { name: hello.title, exact: true }).count(), 0, 'finished lessons are outside To do');
+    await page.getByRole('tab', { name: 'To do', exact: true }).focus();
+    await page.keyboard.press('ArrowRight');
+    await page.getByRole('tabpanel', { name: 'Review', exact: true }).waitFor();
+    assert.equal(await page.getByRole('tab', { name: 'Review', exact: true }).getAttribute('aria-selected'), 'true');
+    await page.locator('.module-lessons').getByRole('heading', { name: hello.title, exact: true }).waitFor();
+    assert.equal(await page.locator('.module-lessons .module-lesson').count(), 1, 'Review contains only passed lessons');
+    await page.screenshot({ path: path.join(fixture, `module-review-${appearance}.png`), fullPage: true });
+  }
+  assert.deepEqual(errors, []);
+  console.log(`Desktop UI passed: independent challenge locks, disabled assistance, syntax/diagnostics, Run versus Submit, preserved sources, lesson tabs, finished-project section, equal run controls, 3D worlds and map fallback, automatic and manual checklist steps, course progress, student lesson path, strict locks, isolated demo solutions, themes, preserved Java, separate refresher, commands, autocomplete and real Java grading. Screenshots: ${fixture}`);
+} catch (error) {
+  if (page) { console.error((await page.locator('body').innerText()).slice(0, 6000)); await page.screenshot({ path: path.join(fixture, 'failure.png'), fullPage: true }); }
+  console.error(`Desktop UI failure artifacts: ${fixture}`);
+  throw error;
+} finally { await browser?.close(); await server.close(); }

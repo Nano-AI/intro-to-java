@@ -43,11 +43,11 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
 button, select { font: inherit; color: inherit; cursor: pointer; }
-/* Scope application controls: CodeMirror owns its internal widgets and dimensions. */
-button:not(.cm-button) { min-height: 36px; border: 1px solid var(--region-border); border-radius: var(--radius-small); padding: 6px var(--space-3); background: var(--panel); font-size: 12px; font-weight: 600; transition: background 120ms, border-color 120ms; }
-button:not(.cm-button):hover:not(:disabled) { border-color: var(--green); background: var(--lime); }
-button:not(.cm-button):active:not(:disabled) { transform: translateY(1px); }
-button:not(.cm-button):disabled { opacity: 1; color: var(--muted); background: transparent; border-style: dashed; cursor: not-allowed; }
+/* Library and editor widgets own their dimensions. */
+button:not(.cm-button):not(:where(.rt-reset, .monaco-editor button)) { min-height: 44px; border: 1px solid var(--region-border); border-radius: var(--radius-small); padding: 10px 16px; background: var(--panel); font-size: 14px; font-weight: 600; transition: background 120ms, border-color 120ms; }
+button:not(.cm-button):not(:where(.rt-reset, .monaco-editor button)):hover:not(:disabled) { border-color: var(--green); background: var(--lime); }
+button:not(.cm-button):not(:where(.rt-reset, .monaco-editor button)):active:not(:disabled) { transform: translateY(1px); }
+button:not(.cm-button):not(:where(.rt-reset, .monaco-editor button)):disabled { opacity: 1; color: var(--muted); background: transparent; border-style: dashed; cursor: not-allowed; }
 button.primary { min-height: 40px; color: var(--panel); background: var(--green); border-color: var(--green); }
 button.primary:hover:not(:disabled) { background: var(--green-hover); color: var(--panel); }
 button.text-button, button.quiet { border-color: transparent; background: transparent; color: var(--green); }
@@ -131,7 +131,7 @@ button.mission.active { background: var(--lime); }
 .pane-heading { height: var(--pane-heading-height); display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); padding: 0 var(--space-3); border-bottom: 1px solid var(--line); }
 .file-title { display: flex; align-items: center; gap: var(--space-2); font-size: 13px; font-weight: 600; white-space: nowrap; }
 .file-dot { width: 7px; height: 7px; border-radius: 2px; background: var(--yellow); }
-#run { min-height: 36px; padding: 6px var(--space-4); }
+#run:not(.rt-Button) { min-height: 36px; padding: 6px var(--space-4); }
 .rate-control { display: flex; align-items: center; gap: var(--space-2); color: var(--green); font-size: 12px; font-weight: 600; }
 .rate-control select { background: var(--lime); border-color: var(--green); font-variant-numeric: tabular-nums; }
 .editor-tools, .scene-tools { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); height: var(--pane-tools-height); padding: 0 var(--space-3); border-bottom: 1px solid var(--line); }

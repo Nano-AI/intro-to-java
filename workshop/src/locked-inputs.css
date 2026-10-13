@@ -1,0 +1,2 @@
+.monaco-editor .pip-locked-input-line { background:var(--inline-code); box-shadow:inset 3px 0 var(--region-border); }
+.monaco-editor .pip-locked-input-glyph { color:var(--code-muted); }

@@ -1,12 +1,12 @@
 // Serves dist/ with a stand-in for the Tauri commands, so the desktop UI can be driven
 // headlessly (Playwright) against real Java, real files, and the real DiagD daemon.
-// Usage: node tools/desktop-bridge.mjs [port]   — state lives in $TMPDIR/pip-bridge.
+// Usage: node tools/desktop-bridge.mjs [port] [--browser] — state lives in $TMPDIR/pip-bridge.
 import http from 'node:http';
 import { spawn, execFileSync } from 'node:child_process';
 import { copyFileSync, symlinkSync, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync, statSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { runProcess } from '../extension/process.js';
+import { runProcess } from '../host/process.js';
 
 const root = path.resolve(import.meta.dirname, '..'), dist = path.join(root, 'dist');
 const base = path.join(os.tmpdir(), 'pip-bridge'), appData = path.join(base, 'appdata'), resources = path.join(base, 'resources'), home = path.join(base, 'home');
@@ -34,7 +34,7 @@ function daemonCall(javaHome, header, source) {
 }
 
 const commands = {
-  paths: () => ({ appData, resources, temp: os.tmpdir(), platform: process.platform, home }),
+  paths: () => ({ appData, resources, temp: os.tmpdir(), platform: process.platform, home, development: true }),
   run_process: async ({ command, args, cwd, input, timeoutMs, maxOutput, runId }) => {
     const controller = new AbortController(); if (runId) runs.set(runId, controller);
     try { return await runProcess(command, args, { cwd: cwd || undefined, input, timeout: timeoutMs, maxOutput, signal: controller.signal }); }
@@ -54,7 +54,7 @@ const commands = {
 
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.ttf': 'font/ttf', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json' };
 export const shim = `window.__TAURI__={core:{invoke:(cmd,args)=>fetch('/invoke/'+cmd,{method:'POST',body:JSON.stringify(args||{})}).then(async r=>{const j=await r.json();if(!r.ok)throw j.error;return j.result;})}};`;
-export function start(port = 4399) {
+export function start(port = 4399, { browser = false } = {}) {
   const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && req.url.startsWith('/invoke/')) {
       let body = ''; for await (const chunk of req) body += chunk;
@@ -65,8 +65,11 @@ export function start(port = 4399) {
     }
     const file = path.join(dist, decodeURIComponent(req.url.split('?')[0]).replace(/^\/$/, '/index.html'));
     if (!file.startsWith(dist) || !existsSync(file) || statSync(file).isDirectory()) return res.writeHead(404).end();
-    res.writeHead(200, { 'content-type': types[path.extname(file)] || 'application/octet-stream' }).end(readFileSync(file));
+    const body = browser && path.extname(file) === '.html'
+      ? readFileSync(file, 'utf8').replace('<head>', `<head><script>${shim}window.__PIP_INITIAL_ROUTE__=location.hash.slice(1)||'/';</script>`)
+      : readFileSync(file);
+    res.writeHead(200, { 'content-type': types[path.extname(file)] || 'application/octet-stream' }).end(body);
   });
   return new Promise(resolve => server.listen(port, '127.0.0.1', () => resolve({ server, url: `http://127.0.0.1:${port}/`, jre, home, stop: () => { daemon?.child.kill(); server.close(); } })));
 }
-if (import.meta.url === `file://${process.argv[1]}`) start(Number(process.argv[2]) || 4399).then(({ url }) => console.log(`Pip bridge on ${url} (inject the __TAURI__ shim before load)`));
+if (import.meta.url === `file://${process.argv[1]}`) start(Number(process.argv[2]) || 4399, { browser: process.argv.includes('--browser') }).then(({ url }) => console.log(`Pip QA bridge on ${url} (temporary workspace)`));

@@ -1,97 +1,116 @@
-# Releasing Pip and adding modules
+# Releasing Pip and adding projects
 
 ## Current delivery
 
-Pip is a desktop VS Code extension, packaged as a `.vsix`. The student already uses VS Code, its Java language support, and a JDK. The extension is not currently published to the Marketplace; `pip-learning` is the local package namespace, not a claim of a registered publisher account.
+Pip 0.10.0 is a standalone Tauri desktop release for **Apple silicon Macs**. Download the [latest installer](https://github.com/Nano-AI/intro-to-java/releases/download/v0.10.0/Pip-Workshop-0.10.0-mac-arm64.dmg) or read the [release notes](https://github.com/Nano-AI/intro-to-java/releases/tag/v0.10.0). Java is included. The package is ad-hoc signed and **not notarized**; the website includes Apple's first-open instructions.
 
-## Build a private release
+Historical release records remain in [CHANGELOG.md](../CHANGELOG.md). They do not establish verification of the current desktop package.
 
-From `workshop/`:
+## Build and verify
+
+From `workshop/`, with Node.js/npm, Rust/Cargo, platform build tools, and a JDK available:
 
 ```sh
-npm ci
+npm install
 npm test
-npm run test:extension
-npm run package
+cargo test --manifest-path src-tauri/Cargo.toml
+npm run test:ui
+npm run build:jre # required on a clean checkout; use the intended JDK
+npm run build:desktop
 ```
 
-The current package is `pip-workshop-0.6.0.vsix`. It includes `InspectSource.java` and the bundled `web/explosion.js` implementation. The package command runs the build hook and uses the version in `package.json`. Inspect the file list with:
+`npm run dev:desktop` launches the native development app. `npm run build` only builds frontend assets; `build:desktop` creates the installable native bundle. Packages appear under `src-tauri/target/release/bundle/`; macOS disk images are in its `dmg/` directory. Names and architectures depend on the target machine, so use the actual build output.
+
+The package includes `Robot.java`, `Runner.java`, `InspectSource.java`, `desktop/DiagD.java`, and the Java runtime in `src-tauri/jre/`. The runtime is not checked into git. On a clean checkout, or when changing the bundled JDK, put the intended JDK's `jlink` on `PATH` and run:
 
 ```sh
-npm exec vsce -- ls --no-dependencies
+npm run build:jre
 ```
 
-On the verified macOS test setup, the integration suite can test an installed VSIX rather than the development folder:
+This recreates the bundled runtime for that JDK/platform. Verify it contains working `bin/java` and `bin/javac` before packaging. Build architecture must match the intended student computer.
 
-```sh
-PIP_TEST_VSIX=pip-workshop-0.6.0.vsix npm run test:extension
+The UI test uses an isolated desktop bridge with real files and Java. It covers project navigation, locks, saved work, quizzes, milestones, snippets, sample runs, and grading. It is not an installed native app test.
+
+Before sharing the resulting package:
+
+1. Open the packaged app from its installed location and verify bundled Java setup.
+2. Check a lesson and a project in the native window: edit, autocomplete, save, run, replay, quit, and reopen.
+3. Confirm a project with missing prerequisites stays locked, including when a completion record exists. Confirm old Java files and progress survive app replacement.
+4. Confirm the bundle contains its Java resources and no student files, test profiles, or temporary run data.
+5. Record the package filename, target platform/architecture, checks performed, and remaining limits.
+
+The macOS configuration currently uses ad-hoc signing. Local packaging does not establish notarization or public distribution readiness. Only link an installer on the website after that actual package has been verified and intentionally published; editing the landing page alone does not publish a release.
+
+## Updating installed copies
+
+Quit Pip, install the new app over the old one, and reopen it. Source files and progress remain in `~/.pip-java`; do not change this location during a routine update. Back up the whole folder when moving machines.
+
+The 0.8.0 prerequisites apply to every project, including previously completed projects. Saved completion records are preserved. A project becomes accessible again after its missing prerequisite lessons pass. Legacy assignment routes redirect into the single Projects section.
+
+Starters only seed missing files. Revising a starter must never replace an existing `Student.java`; replacing code requires the explicit **Restore starter** action. Imported progress also preserves existing Java files.
+
+## Add or revise content
+
+1. Choose a stable ID and required topics. Keep first-three-module homework within Java features already taught.
+2. Add a brief, sample, starter, milestones, code prediction questions, explicit command/API reference, and source attributions. Describe any adaptation of an external problem.
+3. Add content to `src/curriculum.js` or the game project content files and declare prerequisites. Reuse the existing game engine and project UI.
+4. Add a reference solution, boundary cases, changed data, and plausible incorrect solutions. Use `host/assessment.js` structure rules where appropriate and independent helper probes when methods are the learning target.
+5. Add portable tests under `tests/`; update desktop UI coverage when the flow changes. Keep saved IDs, source paths, and progress normalization compatible.
+6. Update [PROJECTS.md](PROJECTS.md), [PROJECTS-REVIEW.md](PROJECTS-REVIEW.md), curriculum documentation, and the changelog. Keep teacher guidance out of student-facing task text.
+7. Keep versions aligned in `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `src-tauri/Cargo.lock`, then rebuild and verify the package.
+
+Bundled checks are inspectable local teaching material. They should catch common mistakes and fixed-answer shortcuts without claiming to be a protected assessment service.
+
+## 0.10.0 verification record
+
+Status: **Apple silicon release built and verified** (2026-10-12).
+
+- `npm test`: **193/193 passed**, including real Java grading, compatibility, locked input lines, challenge versions, lint quality, development-only Demo, and read-only worked examples.
+- `cargo test`: **7/7 passed** for native execution, limits, cancellation, diagnostics and completion.
+- `npm run test:ui`: **passed** with an isolated bridge and real Java. Covered navigation, prerequisites, saved files, challenges, Run/Submit, editor assistance, project refreshers, checklist, themes, commands and replay. Rapid resize/theme changes emit non-failing development `ResizeObserver` notifications.
+- Chromium and WebKit checks covered the worked example and settings scale at desktop/narrow sizes; actual Three.js checks covered jumps in four directions and the stationary board/scoreboard. See [visual QA](UI-FINAL-QA-2026-10-12.md).
+- `npm run build:desktop`: **passed**, creating Pip Workshop.app and the DMG. The native binary and mounted app both report **0.10.0**, architecture **arm64**. Ad-hoc signature and disk-image integrity checks passed. The mounted installer contains the `/Applications` drop link.
+- Bundled `java` and `javac` report **21.0.12.1**. The bundle contains Robot, Runner, InspectSource and DiagD, and no student Java, progress, or settings files.
+- The packaged native app opened successfully. Settings showed **Pip 0.10.0**, **Java Ready**, and no Demo switch. Saved course progress, a practice file and Supply Relay loaded. The user confirmed that Java code is visible in the packaged editor; native screenshot capture omitted its rendered text. Production editor screenshots passed in headless Chromium and WebKit. No native test edits were made to student files.
+- The website passed local Chromium/WebKit checks at **1440, 390 and 320 px** with no overflow or page errors. The screenshot uses an isolated fixture, not student work.
+
+Published installer name: `Pip-Workshop-0.10.0-mac-arm64.dmg` (30,572,718 bytes).
+
+SHA-256:
+
+```text
+223adc611f6489f9df14ebd59657b3be88f0ad586ce5e4a8c96697803e323dce
 ```
 
-This installs into an isolated temporary extension directory/profile. It does not replace the extension in the normal VS Code profile. Set `VSCODE_CLI` when the command-line launcher is at a different location.
+Remaining limits: this package is **not notarized**. Windows and Intel Mac packages were not built. Native launch checks supplement the isolated automated edit/save/run tests; they are not an exhaustive native workflow test. Existing installed copies are replaced manually, preserving `~/.pip-java/`.
 
-Verify the allowlist excludes development dependencies, old desktop/JDK artifacts, temporary runs, test profiles, student data, `.demo-workspace/`, and `.demo-profile/`. The student installs through **Extensions → … → Install from VSIX** and reloads VS Code if prompted.
+## 0.8.0 verification record
 
-## Add or revise teaching content
+Status: **local Apple silicon package built; automated checks passed** (2026-10-11). No publication or installed-app replacement performed.
 
-1. Keep the scope inside CSE 121.
-2. Add a stable, unique lesson ID and its module membership in `src/curriculum.js`.
-3. Write the two-slide Lesson (goal and concept plus model) for `/learn/:lessonId`, the standalone prediction Quiz for `/quiz/:lessonId`, and the separate coding task, starter, checks, and reflection. `src/routes.js` selects `/practice/:lessonId`, `/project/:lessonId`, or `/assignment/:lessonId`. Keep knowledge out of coding; **Review the lesson** navigates back to Lesson. Use inline backticks for code references and fenced `java` blocks for Java examples.
-4. Add executable baseline, boundary, and changed-data cases and a reference solution. Specify appropriate AST requirements in lesson metadata and varied cases in `extension/assessment.js`. Use direct method calls where the method is the learning target. Include a plausible wrong program that passes the simplest example but fails a stronger case.
-5. For robot capabilities, extend the Java API and matching support source deliberately. Maintain compatibility for existing lessons.
-6. Update `docs/CURRICULUM.md`, `docs/ROADMAP.md`, and tests. Count top-level units separately from executable parts: currently 35 units and 39 programs (30 console, nine robot). For groups, maintain the parent's `parts` array, each child's `parentId`, and separate stable file IDs. Increment `assessmentVersion` when old code checks no longer satisfy the unit; preserve earlier records. Activities, quizzes, and review notes remain optional.
-7. Bump the version in `package.json`, refresh `package-lock.json`, update `CHANGELOG.md`, and package the VSIX.
+- `npm test`: **84/84 passed**, including all 39 existing Java practice parts, all three project reference solutions and authored incorrect solutions, independent helper probes, changed-data checks, command completion, and preservation of old Java/support files and progress.
+- `cargo test`: **7/7 passed**, covering native process limits/cancellation and Java diagnostics/completion.
+- `npm run test:ui`: **passed** in Chromium using the real desktop host, an isolated IPC/filesystem bridge and bundled Java. Exercised strict locks (including completed projects), legacy route redirect, preserved Java, nine highlighted refresher questions, saved milestones, command reference, Monaco snippet insertion, sample runs without completion, and full project grading. Inspected captured brief, quiz and completion screens.
+- `npm run build:desktop`: **passed**, producing `src-tauri/target/release/bundle/macos/Pip Workshop.app` and `src-tauri/target/release/bundle/dmg/Pip Workshop_0.8.0_aarch64.dmg`.
+- Bundle version is **0.8.0**. Ad-hoc signature verification passed. Bundle contains the Java runtime, compiler, Robot/Runner/InspectSource and DiagD resources; no student Java sources are bundled.
+- `git diff --check`: passed. Problem documents regenerated from the same project definitions; independent content review checked maps, counts, quiz keys, prerequisites and student-facing wording.
 
-Revising a starter does not replace a student's existing file. Students can explicitly restore a starter, with confirmation and normal editor undo, or a new lesson ID can provide a fresh version. Do not reuse an old ID for an unrelated exercise.
+Remaining limits: the native computer-use pipe failed to start, so installed WKWebView interaction was not checked. The package is ad-hoc signed and **not notarized**; macOS may require approval to open it on another computer. Windows/Intel Mac packages were not built. The two-to-three-session duration is a planning budget, not student-tested timing. Source checks provide learning feedback and are not a proof against every deliberately hardcoded program.
 
-## How students receive updates
 
-For the current private workflow, send the new VSIX and install it over the same extension identity. Java files stay in the learning workspace. Progress stays in VS Code's per-workspace extension storage.
+## 0.9.0 verification record
 
-Schema 5 preserves earlier work and its activity/assessment version maps. Versions are per lesson/part: most are 2, while `debug-semicolon` and `autonomous-docking` are 3. `practiceComplete` equals `hasPassedLesson`: group checks match each part's own assessment version, and an old parent-only pass cannot satisfy all five parts. No activity, quiz, review/reflection, or minimum-text requirement gates completion. Saved reviews, quiz answers, and activities remain available for voluntary use; no data migration is needed. Preserve drafts/reflections during updates and retain export/import coverage. Existing `Robot.java` files are preserved; new challenge IDs receive fresh support when created, without automatic overwrites.
+Status: **local Apple silicon package built; automated checks passed** (2026-10-11). No publication or installed-app replacement performed.
 
-For future Marketplace distribution, establish a publisher identity and publication/license decisions, then publish through the usual VS Code extension process. VS Code can update Marketplace-installed extensions according to the student's update settings. If the publishing identity differs from the private one, export/import progress during migration.
+- `npm test`: **95/95 passed**, including existing Java practices, five cumulative homework solutions and authored incorrect programs, independent helper probes, varied input, autocomplete, storage compatibility, recovery, and demo isolation/concurrency.
+- `cargo test`: **7/7 passed**, covering native process limits/cancellation and Java diagnostics/completion.
+- `npm run test:ui`: **passed** using the real desktop host, isolated IPC/filesystem bridge and bundled Java. Covered Course on fresh launch; navigation and legacy redirects; six module project lists; strict locks; the progress map; light/dark semantic contrast; demo editing without changing student files or progress; all 15 homework quizzes; saved milestones; highlighted commands; Monaco snippet insertion; sample/full grading; replay input; finish markers; and no horizontal overflow at 900 × 600. Captured screens were visually inspected. No page errors occurred.
+- The release build produced **Pip Workshop.app 0.9.0**. Tauri's DMG script completed the app copy and Finder layout but failed to eject its temporary volume with `Resource busy`. After a successful ordinary `hdiutil detach`, the existing image was compressed with `hdiutil convert -format UDZO -imagekey zlib-level=9`. The resulting installer is `src-tauri/target/release/bundle/dmg/Pip Workshop_0.9.0_aarch64.dmg`.
+- Ad-hoc app signature verification passed. Bundled `java` and `javac` both report **21.0.12.1**. Resources include Robot, Runner, InspectSource and DiagD; no student Java sources are bundled.
+- `hdiutil verify` passed for the final DMG. Its mounted app reports 0.9.0, passes signature verification, and includes the `/Applications` drop link. Installer SHA-256: `34e16bf0f250c0606c3819d05f257751daff22fc4637576c2facf92f5e13c06a`.
+- Approved legacy recovery merged verified completion records and restored missing Java files. Existing Java, drafts and game records remained unchanged. A full workspace backup and recovery report were created first.
+- Problem documents were regenerated from the same project definitions. Separate agent reviews checked curriculum contracts, module/catalog coverage, progress recovery, and demo behavior. `git diff --check` passed.
 
-A separate downloadable lesson-content service is not implemented. Bundling new modules in extension releases is sufficient for this tutoring workflow. No Tauri/Electron updater is needed.
+Review artifacts: [UI review brief](UI-REVIEW-REQUEST.md), [complete project review packet](PROJECTS-REVIEW.md), [student problems](PROJECTS.md), and [recovery record](PROGRESS-RECOVERY.md).
 
-## 0.6.0 verification record
-
-- Packaging: `pip-workshop-0.6.0.vsix`, 23 files, approximately 340 KB.
-- `npm test`: 14 of 14 passed, including all 39 reference programs.
-- `npm run test:extension` / installed-VSIX integration: passed with `PIP_TEST_VSIX=pip-workshop-0.6.0.vsix`. New coding-page feedback UI was checked separately in a stubbed browser preview.
-
-Course counts are 35 units and 39 programs (30 console, nine robot), reflecting the new `java-constants` unit.
-
-## 0.5.1 verification record — historical
-
-- Packaging succeeded: `pip-workshop-0.5.1.vsix`, approximately 331 KB.
-- `node --test extension/completion.test.js`: **two targeted tests passed**, proving notes, activity, and quizzes do not gate completion and every multipart code check is still required.
-- Actual installed-VSIX integration passed. Updated assertions cover native strikethrough CSS, no forced review, collapsed optional notes, saving a two-character note, no quiz navigation gate, and existing Java/UI flows.
-
-The full `npm test` suite was not rerun for the 0.5.1 update. The unchanged 38 reference programs' suite results remained the historical 0.5.0 record below. Course counts at 0.5.1 were 34 units and 38 programs.
-
-## 0.5.0 verification record — complete
-
-**`npm test`: nine tests passed.** Coverage includes:
-
-- All 38 reference coding parts in 34 top-level units (29 console programs, nine robot programs), with module unit counts **9 / 6 / 3 / 6 / 5 / 5**.
-- All five failing declaration-repair starters; varied-input, hardcoded-answer, comment, and unused-method regressions.
-- Original-source initializer baselines, unchanged-variable checks, and direct docking parameter assessment. Mission 5 calls `Student.dock` with 30/24/36 cm targets and requires collection plus a collision-free final stop within 4 cm of the requested target.
-- Obstacle, cargo, and hoop challenges; cancellation/storage; randomized debris.
-
-**Actual installed `pip-workshop-0.5.0.vsix` integration: passed.** This verification used the installed package, not only the development folder. Coverage includes:
-
-- Separate Lesson, Quiz, Practice, Project, and Assignment content routes, with knowledge outside coding; interactive declaration models and Quiz flow.
-- Selected-case contrast of at least 4.5:1 in both light and dark themes.
-- Native Java tooling and **Save & run** / **Pip: Save and Run Current Lesson** (`pip.runLesson`) saving unsaved real Java files before execution.
-- Preservation of all five part files and Explorer lesson synchronization.
-- Orbit controls, explosions, and successful hoop scoring.
-
-For future source/content releases, repeat `npm test`, `npm run test:extension`, and installed-VSIX verification using the commands above. Retain coverage for per-part versions, original-source baselines, and support-file preservation; use the current completion and optional-review criteria above. The full-suite verification record in this section applies only to 0.5.0.
-
-## Live demo and ongoing teaching follow-up
-
-Run `npm run demo` from `workshop/` for a live VS Code demo with isolated `.demo-workspace/` and `.demo-profile/` directories. UI rebuilds refresh automatically in Development mode only. Use **Developer: Reload Window** to load host changes; installed releases do not use development auto-refresh.
-
-Student-machine setup and performance are ongoing follow-up: confirm the student's JDK, try a fresh unit and reload, and observe simulator responsiveness on an M1 machine with normal extensions enabled. The recorded 0.5.0 installed-package verification is on the local macOS setup; Windows/Linux have not received the same end-to-end run. Teacher review of reasoning and transfer is optional guidance and is not required by the software.
-
-Export a progress backup and preserve the Java workspace before changing computers or publisher identity. Completion counts record passing code checks; optional teacher review can provide further evidence of mastery.
+Remaining limits: native computer-use failed to start, so installed WKWebView interaction remains unverified. The package is ad-hoc signed and **not notarized**; another Mac may require approval to open it. Windows/Intel Mac packages were not built. Theme checks are not a complete accessibility audit. Project durations remain planning budgets, not student-tested timings; local source checks do not prove resistance to every deliberately hardcoded answer.

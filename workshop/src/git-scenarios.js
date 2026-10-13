@@ -106,10 +106,10 @@ export const gitScenarios = [
     goal: 'Staging copies a chosen version into the crate and leaves the part on the workbench.',
     initial: 'edited',
     terminal: ['restaged'],
-    reset: reset('Back to an edited handle with an empty crate.', 'edited'),
+    reset: reset('Back to an edited handle with no new changes waiting in the crate.', 'edited'),
     states: {
       edited: state(
-        'The shelf holds one snapshot. The workbench holds a newer handle that is not in it. The crate is empty.',
+        'The shelf holds one snapshot. The workbench holds a newer handle. No new changes are waiting in the crate.',
         { workbench: [part('handle', 'handle.txt', 'v2')], shelf: [c1], branches: [branch('main', 'main', 'c1', true)] },
         [{ id: 'stage', label: 'Stage the handle', to: 'staged', feedback: 'A copy of handle v2 went into the crate. The handle is still on the workbench and can still be edited: staging copies a version, it does not take the part away.' }]),
       staged: state(
@@ -137,9 +137,9 @@ export const gitScenarios = [
       staged: state(
         'The crate holds handle v2, ready to be sealed. The warehouse is empty.',
         { workbench: [part('handle', 'handle.txt', 'v2')], crate: [part('handle', 'handle.txt', 'v2')], shelf: [c1], branches: [branch('main', 'main', 'c1', true)] },
-        [{ id: 'commit', label: 'Seal and shelve the crate', to: 'committed', feedback: 'The crate was sealed, labelled, and placed on the shelf in this workshop. The crate is empty again and the workbench is unchanged. No other building knows this snapshot exists.' }]),
+        [{ id: 'commit', label: 'Seal and shelve the crate', to: 'committed', feedback: 'The snapshot was labelled and saved on this workshop’s shelf. No new changes are waiting in the crate. The workbench is unchanged. The snapshot has not been sent to another building.' }]),
       committed: state(
-        'The shelf holds two snapshots. The crate is empty and the workbench still holds handle v2.',
+        'The shelf holds two snapshots. No new changes are waiting in the crate. The workbench still holds handle v2.',
         { workbench: [part('handle', 'handle.txt', 'v2')], shelf: [c1, c2], branches: [main(true)], highlight: ['c2'] },
         [{ id: 'edit', label: 'Edit the handle', to: 'after-commit', feedback: 'The snapshot on the shelf still shows handle v2. A later edit is recorded only after it is staged and committed in turn.' }]),
       'after-commit': state(
@@ -254,9 +254,9 @@ export const gitScenarios = [
           shelf: [c1, c2, commit('c3a', 'steel grip', ['c2']), commit('c3b', 'padded grip', ['c2'], 'side'), commit('m', 'merge the grips', ['c3a', 'c3b'])],
           branches: [branch('main', 'main', 'm', true), branch('side', 'side track', 'c3b')], highlight: ['m'],
         },
-        [{ id: 'trace', label: 'Trace the history back', to: 'traced', feedback: 'Following the merge crate backwards reaches both tracks, so the work done on each one is still readable. A merge adds a crate; it removes none.' }]),
+        [{ id: 'trace', label: 'Trace the history back', to: 'traced', feedback: 'Follow the merge crate’s links back to see both tracks. This merge added a crate and kept both earlier tracks.' }]),
       traced: state(
-        'Every crate on both tracks is reachable from the merge crate.',
+        'Follow the links from the merge crate to find every earlier crate on both tracks.',
         {
           workbench: [part('handle', 'handle.txt', 'v4')],
           shelf: [c1, c2, commit('c3a', 'steel grip', ['c2']), commit('c3b', 'padded grip', ['c2'], 'side'), commit('m', 'merge the grips', ['c3a', 'c3b'])],

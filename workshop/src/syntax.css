@@ -1,0 +1,27 @@
+/* Shared treatment for source fragments in prose, examples and visual models. */
+code.java-inline {
+  font: .94em/1.6 var(--mono);
+  background:var(--inline-code);
+  color:var(--code-text);
+  border:1px solid var(--inline-code-border);
+  border-radius:4px;
+  padding:2px 5px;
+  box-decoration-break:clone;
+  -webkit-box-decoration-break:clone;
+  overflow-wrap:anywhere;
+}
+.tok-variable { color:var(--syntax-variable); }
+.tok-operator { color:var(--syntax-keyword); }
+.tok-punctuation { color:var(--syntax-punctuation); }
+.visual-lab .java-select { display:flex; width:100%; margin-top:6px; text-align:left; }
+.visual-lab .java-select .rt-SelectTriggerInner { flex:1; min-width:0; }
+/* The visual model's full-width SVG rule is for diagrams, not control icons. */
+.visual-lab .java-select .rt-SelectIcon { width:9px; height:9px; flex-shrink:0; }
+.visual-lab .java-select code.java-inline, .java-select-option code.java-inline {
+  background:transparent;
+  border:0;
+  padding:0;
+  font-size:14px;
+}
+.java-select-option[data-highlighted] { background:var(--lime); color:var(--ink); }
+.memory-cell code.java-inline, .array-cells code.java-inline { border:0; padding:0; background:transparent; }

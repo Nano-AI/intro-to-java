@@ -1,17 +1,20 @@
 import React from 'react';
+import { tokenizeJava } from './java-tokens.js';
+import './syntax.css';
 
-// Read-only Java snippet in the editor's colours. A tokenizer for short teaching snippets, not a parser.
-const token = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])')|\b(\d+(?:\.\d+)?[dDfFL]?|true|false|null)\b|\b(abstract|boolean|break|case|char|class|continue|default|do|double|else|extends|final|for|if|import|int|long|new|package|private|protected|public|return|static|switch|this|void|while)\b|\b([A-Z][A-Z0-9_]*)\b(?![\w$])|\b([A-Z][\w$]*)|\b([a-z_$][\w$]*)(?=\s*\()/g;
-const kinds = ['comment', 'string', 'literal', 'keyword', 'literal', 'type', 'function'];
+function sourceText(children) {
+  return React.Children.toArray(children).join('');
+}
+
+function JavaTokens({ children }) {
+  return tokenizeJava(sourceText(children)).map(({text, kind}, i) => kind
+    ? <span key={i} className={`tok-${kind}`}>{text}</span> : text);
+}
+
+export function JavaInline({ children }) {
+  return <code className="java-inline"><JavaTokens>{children}</JavaTokens></code>;
+}
 
 export default function JavaCode({ children }) {
-  const text = String(children ?? ''), parts = [];
-  let last = 0;
-  for (const match of text.matchAll(token)) {
-    parts.push(text.slice(last, match.index));
-    parts.push(<span key={match.index} className={`tok-${kinds[match.slice(1).findIndex(Boolean)]}`}>{match[0]}</span>);
-    last = match.index + match[0].length;
-  }
-  parts.push(text.slice(last));
-  return <pre className="java-code"><code>{parts}</code></pre>;
+  return <pre className="java-code"><code><JavaTokens>{children}</JavaTokens></code></pre>;
 }

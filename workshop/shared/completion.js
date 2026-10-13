@@ -16,11 +16,11 @@ export { totalStars, starsNeeded };
 
 // ------------------------------------------------------------ coding lessons
 
-// A pass is the id in `completed`. A pass recorded by an older app version
-// (older or missing assessment version) still counts, so installing an update
-// never un-checks finished work.
+// Guided lesson passes survive updates. Revised independent challenges require
+// their new assessment, while the earlier completion record remains saved.
 export const hasPassedPart = (lesson, progress) =>
-  Boolean(lesson) && (progress.completed || []).includes(lesson.id);
+  Boolean(lesson) && (progress.completed || []).includes(lesson.id) &&
+  (!lesson.independent || (progress.assessments?.[lesson.id] || 0) >= lesson.assessmentVersion);
 
 // `lookup` resolves a multipart child id to its lesson object.
 export const hasPassedLesson = (lesson, progress, lookup) =>

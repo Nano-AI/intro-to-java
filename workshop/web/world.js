@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createExplosion } from './explosion.js';
+import { createTileWorld } from './tile-world.js';
+import { createPipRobot } from './pip-model.js';
 
 const environments = {
   workshop: { background: 0xdfe7d8, base: 0x8b9983, rim: 0xc6c9aa, floor: 0xe6dfc4, grid: 0xcac5ac, wall: 0x93a68b, sky: 0xffffed, ground: 0x687765, sun: 0xfff4d6, intensity: 3.1 },
@@ -8,7 +10,8 @@ const environments = {
   moon: { background: 0x233448, base: 0x617080, rim: 0xa2b0bd, floor: 0xc4cdd1, grid: 0xa2afb7, wall: 0x7c94a7, sky: 0xe2f1ff, ground: 0x3c4c66, sun: 0xdcecff, intensity: 2.4 },
 };
 
-export function createWorld(host) {
+export function createWorld(host, options = {}) {
+  if (options.grid) return createTileWorld(host);
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.shadowMap.enabled = true;
@@ -116,22 +119,7 @@ export function createWorld(host) {
   for (const dx of [-.4, 0, .4]) box(.015, .012, .6, 0xa6c5d8, -2.4 + dx, 1.24, -4.02, moon);
   const starsGeometry = new THREE.BufferGeometry().setFromPoints(Array.from({ length: 65 }, (_, i) => new THREE.Vector3(Math.sin(i * 2.4) * (14 + i % 4), 3 + i % 9, Math.cos(i * 2.4) * (14 + i % 4))));
   const stars = new THREE.Points(starsGeometry, new THREE.PointsMaterial({ color: 0xdbeaff, size: 1.5, sizeAttenuation: false })); moon.add(stars);
-  const robot = new THREE.Group(); scene.add(robot);
-  box(.62, .28, .65, 0xf0b348, 0, .35, 0, robot);
-  box(.55, .17, .5, 0xffd579, 0, .55, -.02, robot);
-  box(.46, .18, .045, 0x29483f, 0, .52, -.285, robot);
-  for (const x of [-.13,.13]) box(.065, .065, .02, 0xc5f4dc, x, .53, -.315, robot);
-  const wheels = [];
-  for (const x of [-.37,.37]) {
-    const wheel = cylinder(.21, .16, 0x354640, x, .23, .03, robot);
-    wheel.rotation.z = Math.PI / 2; wheels.push(wheel);
-    const hub = cylinder(.1, .17, 0x91a39a, x, .23, .03, robot); hub.rotation.z = Math.PI/2;
-  }
-  cylinder(.025, .25, 0x587363, .19, .77, .1, robot);
-  const antenna = new THREE.Mesh(new THREE.SphereGeometry(.055, 8, 6), material(0xe68052));
-  antenna.position.set(.19, .9, .1); robot.add(antenna);
-  const part = box(.24, .22, .24, 0x86c7b2, 0, .79, .04, robot); part.visible = false;
-  const loadedBall=new THREE.Mesh(new THREE.SphereGeometry(.14,12,8),material(0xf28d3c));loadedBall.position.set(0,.78,0);loadedBall.visible=false;robot.add(loadedBall);
+  const pip = createPipRobot(material), robot = pip.group; scene.add(robot);
   const projectile=new THREE.Mesh(new THREE.SphereGeometry(.13,12,8),material(0xf28d3c));projectile.castShadow=true;projectile.visible=false;scene.add(projectile);
   const level=new THREE.Group();scene.add(level);
   function setLevel(spec) {
@@ -152,7 +140,7 @@ export function createWorld(host) {
       if(goal.kind==='ball'){const ball=new THREE.Mesh(new THREE.SphereGeometry(.14,12,8),material(0xf28d3c));ball.position.set(x,.28,z);level.add(ball);ball.userData.pickup=true;}
       const labelCanvas=document.createElement('canvas');labelCanvas.width=256;labelCanvas.height=80;const ctx=labelCanvas.getContext('2d');
       ctx.fillStyle='#fffdf7';ctx.fillRect(0,0,256,80);ctx.fillStyle='#263c36';ctx.font='bold 25px sans-serif';ctx.textAlign='center';ctx.fillText(goal.label,128,32);ctx.font='19px monospace';ctx.fillText(`(${goal.x}, ${goal.y}) cm`,128,61);
-      const label=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(labelCanvas),depthTest:false}));label.position.set(x,goal.kind==='hoop'?1.65:.9,z);label.scale.set(1.65,.52,1);level.add(label);
+      const label=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(labelCanvas),depthTest:true,depthWrite:false,alphaTest:.1}));label.position.set(x,goal.kind==='hoop'?1.65:.9,z);label.scale.set(1.65,.52,1);level.add(label);
     }
     draw();
   }
@@ -166,8 +154,8 @@ export function createWorld(host) {
     current = frame; restored = completed; mission = selected;
     if (!frame.collision) robot.visible = true;
     robot.position.set(frame.x / 50, 0, -frame.y / 50); robot.rotation.y = -frame.heading * Math.PI / 180;
-    part.visible = frame.carrying;
-    loadedBall.visible=Boolean(frame.ballLoaded);
+    pip.setCargo(frame.carrying ? 1 : 0);
+    pip.setBall(Boolean(frame.ballLoaded));
     projectile.visible=Boolean(frame.ball?.visible);
     if(frame.ball)projectile.position.set(frame.ball.x/50,Math.max(.13,frame.ball.z/50),-frame.ball.y/50);
     level.children.forEach(object=>{if(object.userData.pickup)object.visible=!frame.ballLoaded&&!frame.ball?.visible;if(object.userData.cargoPickup)object.visible=!frame.carrying&&!frame.delivered;if(object.userData.deliveredCargo)object.visible=Boolean(frame.delivered);});

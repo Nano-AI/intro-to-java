@@ -5,8 +5,10 @@ import { games as unit2 } from './unit-2.js';
 import { games as unit3 } from './unit-3.js';
 import { games as unit4 } from './unit-4.js';
 import { games as unit5 } from './unit-5.js';
+import { projects } from './projects.js';
+import { projects as advancedProjects } from './advanced-projects.js';
 
-export const games = [...unit1, ...unit2, ...unit3, ...unit4, ...unit5];
+export const games = [...unit1, ...unit2, ...unit3, ...unit4, ...unit5, ...projects, ...advancedProjects];
 
 export const gameIds = games.map(game => game.id);
 export const findGame = id => games.find(game => game.id === id) || null;

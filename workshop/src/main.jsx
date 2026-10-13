@@ -2,22 +2,25 @@ import React, { useCallback, useEffect, useRef, useState, Suspense, lazy } from 
 import { createRoot } from 'react-dom/client';
 import { HashRouter, Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { saveChanges } from './progress.js';
-import { request, subscribe, inVSCode, inDesktop, initialRoute, rememberRoute } from './platform.js';
-import { CoursePage, ModulePage, ProgressPage, SettingsPage, ProjectsPage, AssignmentsPage } from './pages.jsx';
+import { request, subscribe, inDesktop, initialRoute } from './platform.js';
+import { CoursePage, ModulePage, ProgressPage, SettingsPage, ProjectsPage } from './pages.jsx';
 import { ProgressContext } from './context.js';
 import { lessons } from './curriculum.js';
 import { practicePath } from './routes.js';
 import Icon from './icon.jsx';
+import AppearanceProvider from './appearance.jsx';
+import DemoProvider from './demo.jsx';
 import '../web/style.css';
 import './style.css';
-import './extension.css';
+import './workbench.css';
 import './desktop.css';
+import '@radix-ui/themes/styles.css';
+import './appearance.css';
 
 const Workspace = lazy(() => import('./workspace.jsx'));
 const LearningPage = lazy(() => import('./learn.jsx'));
 const QuizPage = lazy(() => import('./quiz.jsx'));
 const GamePage = lazy(() => import('./game-page.jsx'));
-const GamesPage = lazy(() => import('./games-page.jsx'));
 
 function LegacyLessonRedirect() {
   const { lessonId } = useParams();
@@ -34,18 +37,20 @@ function App() {
     acceptProgress(next);
     saveChanges(previous, next).then(() => setSaveError('')).catch(e => setSaveError(`Could not save: ${e.message}`));
   }, [acceptProgress]);
-  const location = useLocation(); const coding = /^\/(lesson|learn|quiz|practice|project|assignment|game)\//.test(location.pathname);
+  const location = useLocation();
+  const inCourse = /^\/(module|learn|quiz|practice|lesson|challenge)\//.test(location.pathname);
+  const inProjects = /^\/(project|game)\//.test(location.pathname);
   useEffect(() => { const stop = subscribe('progress', acceptProgress); request('progress.load').then(acceptProgress).catch(e => setError(e.message)); return stop; }, [acceptProgress]);
   useEffect(() => {
     return subscribe('navigate', ({ route }) => navigate(route));
   }, []);
-  useEffect(() => { window.scrollTo(0, 0); rememberRoute(location.pathname); }, [location.pathname]);
-  if (!inVSCode && !inDesktop) return <main className="page-shell"><h1>Pip lives in VS Code.</h1><p>Install the Pip Workshop VSIX, open a learning folder, and run <b>Pip: Open Course</b> from the Command Palette.</p><p>This page is only a visual preview. Java editing and execution are provided by VS Code.</p></main>;
-  if (error) return <main className="page-shell"><h1>Progress needs attention</h1><p role="alert">{error}</p><p>The existing file has not been replaced. See the storage recovery instructions in the local documentation.</p><button onClick={() => window.location.reload()}>Retry</button></main>;
+  useEffect(() => { window.scrollTo(0, 0); }, [location.pathname]);
+  if (!inDesktop) return <main className="page-shell"><h1>Open Pip Workshop.</h1><p>Use the desktop app to explore lessons, write Java, and run projects.</p><p>For development, start the app with <code>npm run dev:desktop</code>.</p></main>;
+  if (error) return <main className="page-shell"><h1>Pip couldn't open</h1><p role="alert">{error}</p><button onClick={() => window.location.reload()}>Retry</button></main>;
   if (!progress) return <main className="page-shell"><h1>Opening the workshop…</h1></main>;
-  return <ProgressContext.Provider value={{ progress, update }}>
-    {!coding && <a className="skip" href="#" onClick={e => { e.preventDefault(); const main = document.querySelector('main'); if (main) { main.tabIndex = -1; main.focus(); } }}>Skip to content</a>}
-    {!coding && <header className="site-header"><Link className="brand" to="/"><span className="brand-bot"><Icon name="bot" /></span> pip <span className="brand-sub">JAVA FOUNDATIONS</span></Link><nav className="app-nav" aria-label="Application"><NavLink to="/" end>Course</NavLink><NavLink to="/games">Games</NavLink><NavLink to="/projects">Projects</NavLink><NavLink to="/assignments">Assignments</NavLink><NavLink to="/progress">Progress</NavLink><NavLink to="/settings">Settings</NavLink></nav></header>}
+  return <ProgressContext.Provider value={{ progress, update }}><div className={inProjects ? 'project-focus' : undefined}>
+    {<a className="skip" href="#" onClick={e => { e.preventDefault(); const main = document.querySelector('main'); if (main) { main.tabIndex = -1; main.focus(); } }}>Skip to content</a>}
+    {!inProjects && <header className="site-header"><Link className="brand" to="/"><span className="brand-bot"><Icon name="bot" /></span> Pip</Link><nav className="app-nav" aria-label="Application"><NavLink to="/" end className={({ isActive }) => isActive || inCourse ? 'active' : undefined}><Icon name="book-open" />Course</NavLink><NavLink to="/projects"><Icon name="package" />Projects</NavLink><NavLink to="/progress"><Icon name="circle-check" />Progress</NavLink><NavLink to="/settings"><Icon name="sliders-horizontal" />Settings</NavLink></nav></header>}
     {saveError && <p className="save-error" role="alert">{saveError}</p>}
     <Suspense fallback={<main className="page-shell"><h1>Opening the workbench…</h1></main>}><Routes>
       <Route path="/" element={<CoursePage />} />
@@ -53,20 +58,19 @@ function App() {
       <Route path="/learn/:lessonId" element={<LearningPage />} />
       <Route path="/quiz/:lessonId" element={<QuizPage />} />
       <Route path="/practice/:lessonId" element={<Workspace />} />
+      <Route path="/challenge/:lessonId" element={<Workspace />} />
       <Route path="/project/:lessonId" element={<Workspace />} />
-      <Route path="/assignment/:lessonId" element={<Workspace />} />
+      <Route path="/assignment/:lessonId" element={<LegacyLessonRedirect />} />
       <Route path="/lesson/:lessonId" element={<LegacyLessonRedirect />} />
-      <Route path="/games" element={<GamesPage />} />
+      <Route path="/games" element={<Navigate replace to="/projects" />} />
       <Route path="/game/:gameId" element={<GamePage />} />
       <Route path="/projects" element={<ProjectsPage />} />
-      <Route path="/assignments" element={<AssignmentsPage />} />
+      <Route path="/assignments" element={<Navigate replace to="/projects" />} />
       <Route path="/progress" element={<ProgressPage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="*" element={<main className="page-shell"><h1>Page not found</h1><Link to="/">Return to the course</Link></main>} />
     </Routes></Suspense>
-  </ProgressContext.Provider>;
+  </div></ProgressContext.Provider>;
 }
-// The dark palette keys off VS Code's body class, so the desktop app follows the OS theme through the same class.
-if (inDesktop) { const dark = matchMedia('(prefers-color-scheme: dark)'), apply = () => document.body.classList.toggle('vscode-dark', dark.matches); apply(); dark.addEventListener('change', apply); }
 window.location.hash = initialRoute;
-createRoot(document.getElementById('root')).render(<HashRouter><App /></HashRouter>);
+createRoot(document.getElementById('root')).render(<AppearanceProvider><DemoProvider><HashRouter><App /></HashRouter></DemoProvider></AppearanceProvider>);

@@ -10,6 +10,11 @@ const PHRASE = 'Hello, Arena!';
 export const games = [
   {
     id: 'hello-arena',
+    unit: 'basics',
+    prerequisites: ['hello-java'],
+    summary: 'Make Pip greet the arena by printing the exact message.',
+    topics: ['Printing', 'Strings', 'Program structure'],
+    estimatedMinutes: [5, 10],
     subtopic: '1.1',
     title: 'Hello Arena',
     boss: false,

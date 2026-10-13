@@ -79,7 +79,7 @@ fn io_err(e: io::Error, path: &str) -> String {
     }
 }
 
-// Mirrors runProcess in extension/runner.js.
+// Mirrors runProcess in host/runner.js.
 fn spawn_run(command: &str, args: &[String], cwd: Option<&str>, input: &str, timeout_ms: u64, max_output: usize, run_id: Option<&str>) -> Result<RunResult, String> {
     let mut cmd = Command::new(command);
     cmd.args(args).env("LC_ALL", "C").stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
@@ -232,6 +232,7 @@ fn fs_mkdtemp(prefix: String) -> Result<String, String> {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Paths {
+    development: bool,
     app_data: String,
     resources: String,
     temp: String,
@@ -246,6 +247,7 @@ fn paths(app: AppHandle) -> Result<Paths, String> {
     let resources = app.path().resource_dir().map_err(|e| e.to_string())?;
     let home = app.path().home_dir().map_err(|e| e.to_string())?;
     Ok(Paths {
+        development: cfg!(debug_assertions) && tauri::is_dev(),
         home: home.to_string_lossy().into_owned(),
         app_data: data.to_string_lossy().into_owned(),
         resources: resources.to_string_lossy().into_owned(),
@@ -262,6 +264,7 @@ fn paths(app: AppHandle) -> Result<Paths, String> {
 
 struct Daemon {
     home: String,
+    class_dir: PathBuf,
     child: Child,
     stdin: ChildStdin,
     stdout: BufReader<ChildStdout>,
@@ -309,6 +312,7 @@ fn start_daemon(diag_src: &Path, class_dir: &Path, java_home: &str) -> Result<Da
         .map_err(|e| format!("Could not start java: {e}"))?;
     Ok(Daemon {
         home: java_home.into(),
+        class_dir: class_dir.into(),
         stdin: child.stdin.take().unwrap(),
         stdout: BufReader::new(child.stdout.take().unwrap()),
         child,
@@ -322,7 +326,7 @@ fn diag_request(diag_src: &Path, class_dir: &Path, java_home: &str, source_root:
     }
     let mut slot = lock(&DIAG);
     let alive = match slot.as_mut() {
-        Some(d) => d.home == java_home && matches!(d.child.try_wait(), Ok(None)),
+        Some(d) => d.home == java_home && d.class_dir == class_dir && matches!(d.child.try_wait(), Ok(None)),
         None => false,
     };
     if !alive {

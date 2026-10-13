@@ -11,6 +11,11 @@ const LANE = 5;         // the row Pip drives along
 export const games = [
   {
     id: 'hoop-streak',
+    unit: 'loops',
+    prerequisites: ['hello-java', 'java-declare', 'java-variables', 'java-for'],
+    summary: 'Buy the right number of balls and repeat shots with a for loop.',
+    topics: ['For loops', 'Variables', 'String concatenation'],
+    estimatedMinutes: [15, 25],
     subtopic: '2.1',
     title: 'Hoop Streak',
     boss: false,
@@ -18,13 +23,13 @@ export const games = [
     brief: [
       'The scoreboard asks for a number of baskets and Pip starts with no balls at all.',
       '',
-      'The shopkeeper is three tiles east. Drive up to the counter, ask for the balls out loud, turn left to face the hoop, and shoot once for every basket.',
+      'The starter moves Pip three tiles east to the counter. The shopkeeper is now directly ahead. Ask for the balls, turn left to face the hoop, and shoot once for each basket.',
       '',
       'The route never changes. Only the number of baskets does, so the number of shots has to come from a loop rather than from copied lines.',
     ].join('\n'),
-    task: 'Score exactly as many baskets as the scoreboard asks for, using a `for` loop for the shots.',
-    hint: 'Ask the shopkeeper with `System.out.println("Can I have " + baskets + " balls?")`, then repeat `System.out.println("shoot")` inside `for (int i = 0; i < baskets; i++)`.',
-    inputHelp: 'One line with one whole number: the baskets to score (4 to 31).',
+    task: 'The starter reads the target number into `baskets` and moves Pip to the shop. Ask for that many balls. Turn left, then use a `for` loop to print `shoot` once per basket. Score exactly `baskets`.',
+    hint: 'Ask with `System.out.println("Can I have " + baskets + " balls?");`. Turn using `System.out.println("turn left");`. Repeat `System.out.println("shoot");` inside `for (int i = 0; i < baskets; i++)`.',
+    inputHelp: 'One whole number from 4 to 31: the target stored in `baskets`.',
     starter: [
       'import java.util.Scanner;',
       '',

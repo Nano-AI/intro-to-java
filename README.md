@@ -1,75 +1,70 @@
 # Pip — Java learning for robotics
 
-The active project is **Pip Workshop**, a VS Code extension in [`workshop/`](workshop/README.md). Students manipulate concept models, write real Java, repair broken programs, and compare predictions with output graphics or a 3D robot replay.
+**Pip Workshop is a standalone Tauri desktop app** in [`workshop/`](workshop/README.md). Learn a Java concept, predict what a short program does, then write real Java in the built-in editor and inspect its output or robot replay. The desktop bundle includes Java.
 
-**Course scope: UW CSE 121, Spring 2026.** Version 0.6.0 includes **35 top-level learning units across six modules, with 39 executable coding parts/files: 30 console and nine robot programs**. The declaration-repair unit has five parts; robotics includes obstacle detour, cargo delivery, and hoop shooting. It is an original tutoring adaptation, not an official UW course or a certification of mastery. Teacher review is optional guidance for assessing understanding.
+Version 0.10.0 links every module to its projects: **Supply Relay**, **Staircase Arena**, **Tower Rescue**, **Signal Patrol**, and **Mosaic Survey**, alongside the existing short games and final projects. One **Projects** section provides topic tags, time estimates, prerequisites, and direct module links. A visual progress map and consistent light/dark settings use Radix Themes components. Ten independent challenges add varied input tests without autocomplete or solution assistance. Development builds also offer an isolated Demo mode.
 
-## Use the extension
+The curriculum is an original tutoring adaptation of [UW CSE 121, Spring 2026](https://courses.cs.washington.edu/courses/cse121/26sp/), with robotics practice. It is not an official UW course or a certification of mastery.
 
-1. In VS Code, install **Language Support for Java by Red Hat** and have a JDK available.
-2. Install `workshop/pip-workshop-0.6.0.vsix` using **Extensions → … → Install from VSIX**.
-3. Open a dedicated learning folder.
-4. Run **Pip: Open Course** from the Command Palette, or select Pip in the activity bar.
-5. Open **Lesson** at `/learn/:lessonId` for two slides: goal and concept plus interactive model. **Quiz** at `/quiz/:lessonId` is the separate prediction page.
-6. Continue to Practice at `/practice/:lessonId`, Project at `/project/:lessonId`, or Assignment at `/assignment/:lessonId`. Coding shows the task with an optional hint ladder, the native `Student.java`, output or simulator, checks with plain-language error notes, **Try own input** for programs that read input, and optional notes. **Review the lesson** returns to Lesson. Legacy `/lesson/:lessonId` redirects.
-7. Choose **Save & run** or **Pip: Save and Run Current Lesson** (`pip.runLesson`); the real Java file is saved before compilation.
+## Use Pip
 
-The `/projects` catalog contains the three robot challenges. `/assignments` contains `autonomous-docking` and `java-final-report`. These are alternate views of existing course units.
+Download [Pip Workshop 0.10.0 for Apple silicon Macs](https://github.com/Nano-AI/intro-to-java/releases/download/v0.10.0/Pip-Workshop-0.10.0-mac-arm64.dmg), open the disk image, and drag **Pip Workshop** into **Applications**. Students use the app's Java editor; no separate editor, Node.js, Rust, or web server is needed. See the [desktop guide](workshop/README.md).
 
-Students do not need Node.js, Rust, Tauri, or a running web server. The extension uses VS Code's extension host and an installed JDK.
+The Mac package includes Java and uses ad-hoc signing; it is not notarized. If macOS blocks first launch, follow the [installation guide](workshop/README.md#install-and-update). See [release checks](workshop/docs/RELEASING.md) and the [course website](https://bankoti.dev/intro-to-java/).
 
-Begin with output and explicit variable declarations, then the five-part declaration-repair group, types, loops, methods, decisions, and arrays. Completion requires only passing current code checks for every coding part. Activities, quizzes, and review/reflection are optional. Review notes are collapsed by default and autosave at any length. Lesson and Quiz always allow entering practice; resuming existing code does not force review or quiz navigation. Completed titles are crossed off in module lists, catalogs, progress, completed modules, and part buttons, with visible **Completed** status. Prior files and saved reviews, quiz answers, and activities are preserved for voluntary use; no data migration is needed. AST structure checks, changed data, and direct method tests strengthen feedback, but local grading is not cheat-proof.
+Code and progress remain in `~/.pip-java`. Existing Java files, drafts, quiz answers, and completion records are preserved. Prerequisite locks apply to completed projects too; passing missing prerequisite lessons restores access to their saved work.
 
-Assessment versions are per lesson/part: most are version 2; `debug-semicolon` and `autonomous-docking` are version 3. Group checks use each part's own version. The robot projects are original simplified teaching challenges, not an official game clone.
-
-## Develop and package
+## Develop
 
 From `workshop/`:
 
 ```sh
-npm ci
-npm run build
+npm install
 npm test
-npm run test:extension
-npm run package
+cargo test --manifest-path src-tauri/Cargo.toml
+npm run test:ui
+npm run build:jre # first build, or when changing the bundled JDK
+npm run build:desktop
 ```
 
-Open the `workshop` folder in VS Code and press **F5** to run an Extension Development Host. Integration tests use a separate profile and learning folder.
+Use `npm run dev:desktop` for native development. Developers need Node.js/npm, Rust/Cargo, platform build tools, and a JDK. See [build and release details](workshop/docs/RELEASING.md), including the bundled Java runtime.
 
-See [`workshop/docs/RELEASING.md`](workshop/docs/RELEASING.md) for the live VS Code demo command and verification history.
+## Documentation
 
-## Local documentation
-
-- [Extension installation and usage](workshop/README.md)
+- [Desktop installation and usage](workshop/README.md)
 - [Architecture and storage](workshop/docs/ARCHITECTURE.md)
-- [CSE 121 coverage and teaching notes](workshop/docs/CURRICULUM.md)
-- [Every lesson: visual action, coding target, tests, and optional teacher guidance](workshop/docs/ROADMAP.md)
-- [Packaging and module updates](workshop/docs/RELEASING.md)
-- [Changelog](workshop/CHANGELOG.md)
-- `teacher/course-map.md`: private local hands-on teaching plan. The previous CSE 142 notes and slide materials are retained under `teacher/archive/` and their existing locations as legacy references.
+- [Independent UI review brief](workshop/docs/UI-REVIEW-REQUEST.md) and [progress recovery procedure](workshop/docs/PROGRESS-RECOVERY.md)
+- [Project briefs](workshop/docs/PROJECTS.md) and [independent review packet](workshop/docs/PROJECTS-REVIEW.md)
+- [Curriculum coverage](workshop/docs/CURRICULUM.md) and [lesson roadmap](workshop/docs/ROADMAP.md)
+- [Release procedure](workshop/docs/RELEASING.md) and [historical changelog](workshop/CHANGELOG.md)
+
+Private teaching notes and slide decks remain under the gitignored `teacher/` directory, including earlier materials in `teacher/archive/`.
 
 ## Repository layout
 
 ```text
-workshop/             active VS Code extension
-  extension/          commands, Java runner, progress storage, integration tests
-  src/                React course pages and lesson/simulator webview
-  web/                reusable 3D scene, effects, robot lesson definitions
-  shared/             progress normalization/migration
-  docs/               current technical and teaching documentation
-docs/                 earlier static course website and starter downloads
-teacher/              private teaching notes and slide decks (gitignored)
-make-zips.py          rebuilds the earlier website's starter archives
+workshop/
+  src/          React course, projects, editor, and replay pages
+  desktop/      Native bridge adapters and Java completion daemon
+  host/         Shared Java runner, grading, and progress storage
+  src-tauri/    Tauri shell, native commands, and bundled Java runtime
+  shared/       Progress, game contracts, commands, and prerequisite rules
+  tests/        Portable Java, game, grading, and compatibility tests
+  web/          Reusable 3D scene and robot simulation content
+  docs/         Technical documentation and project review material
+docs/           Static landing page, earlier weekly notes, and starter downloads
+teacher/        Private teaching notes and slide decks (gitignored)
+make-zips.py    Rebuilds the earlier website's starter archives
 ```
 
-## Earlier static course website
+## Earlier weekly notes
 
-The site at https://nano-ai.github.io/intro-to-java/ now serves `docs/index.html` as a promotional landing page for the Pip Workshop VS Code extension, with the packaged `.vsix` download under `docs/downloads/`. The original week 0–4 pages remain as earlier notes, linked from that landing page's "Earlier weekly notes" section; they have not been converted into the extension UI. After packaging a new Pip Workshop version, copy the new `.vsix` into `docs/downloads/` and update the download link on `docs/index.html`.
+The [course website](https://bankoti.dev/intro-to-java/) introduces Pip and retains the original week 0–4 notes, Battle Sim, and starter downloads. Those historical materials remain separate from the desktop app. The original Battle Sim was adapted from CSE 142's Admissions assignment; that attribution still applies.
 
-The `docs/` website still has no build dependencies and is served through GitHub Pages from `master` → `/docs`. After changing files in `docs/starters/`, rebuild the downloads from the repository root:
+The static site has no build dependencies. After changing `docs/starters/`, rebuild its starter downloads from the repository root:
 
 ```sh
 python3 make-zips.py
 ```
 
-The original Battle Sim was adapted from CSE 142's Admissions assignment. That historical attribution remains valid; the current extension's curriculum reference is [CSE 121, Spring 2026](https://courses.cs.washington.edu/courses/cse121/26sp/).
+Desktop releases are built separately. Updating the website does not publish or install a new app package.

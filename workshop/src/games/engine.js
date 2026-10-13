@@ -3,7 +3,7 @@
 // Pure, deterministic, side-effect-free: the same world and the same stdout
 // always produce the same events, the same `end`, and the same stars. Nothing
 // here touches the filesystem, a process, or the clock. Java execution lives in
-// extension/runner.js; this file only reads the text it produced.
+// host/runner.js; this file only reads the text it produced.
 //
 // Every shape crossing a boundary comes from shared/game-contract.js. Nothing
 // is redefined locally, including mulberry32, which is re-exported so content
@@ -27,13 +27,21 @@ export { mulberry32 };
 // entirely by the range the generator maps those draws onto.
 export const worldRng = (seed, level) => mulberry32((Math.imul(seed >>> 0, 0x9e3779b1) + Math.imul(level, 0x85ebca6b)) >>> 0);
 
+// The editor and Java runner share the same three visible examples.
+export function publicGameWorld(game, caseIndex) {
+  if (![0, 1, 2].includes(caseIndex)) throw new Error('Public example index must be 0, 1, or 2.');
+  return structuredClone(caseIndex === 0
+    ? game.sampleWorld || game.world(worldRng(1, 1), 1)
+    : game.world(() => caseIndex === 1 ? 0 : 0.999999, 1));
+}
+
 // AUTHORING NOTE — world variety, and what actually stops a memorised answer.
 //
 // Variety is the generator's job. A graded tier runs three worlds, so if
 // `world()` maps its draws onto a narrow range those three repeat:
 // `3 + Math.floor(rng() * 4)` has four possible values, and a three-seed graded
 // run then draws only two distinct worlds. Make the parameter space wide enough
-// that repeats are rare; `extension/games.test.js` measures this and fails a
+// that repeats are rare; `tests/games.test.js` measures this and fails a
 // range that is too narrow.
 //
 // But world variety is NOT the defence against a memorised answer, and must not

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as monaco from 'monaco-editor/editor/editor.api';
 import EditorWorker from 'monaco-editor/editor/editor.worker?worker';
 import { conf, language } from 'monaco-editor/languages/definitions/java/java';
-// Only the VS Code features a beginner uses; editor.main would also pull in every language and the TS/JSON/CSS/HTML services.
+// Import only the Monaco features used here; editor.main also pulls in unrelated language services.
 import 'monaco-editor/editor/browser/coreCommands';
 import 'monaco-editor/features/codicon/register'; // icon font CSS; Vite bundles the .ttf
 import 'monaco-editor/features/find/register';
@@ -23,7 +23,11 @@ import 'monaco-editor/editor/contrib/toggleTabFocusMode/browser/toggleTabFocusMo
 import 'monaco-editor/editor/contrib/wordHighlighter/browser/wordHighlighter';
 import 'monaco-editor/editor/contrib/wordOperations/browser/wordOperations';
 import { parser } from '@lezer/java';
+import { isJavaCodePosition, isJavaMemberPosition } from '../shared/game-commands.js';
 import Icon from './icon.jsx';
+import { useAppearance } from './appearance.jsx';
+import { lockedInputLines, touchesLockedInput, moveLockedInputLines, sameLockedInputLines, validLockedInputReset } from './locked-inputs.js';
+import './locked-inputs.css';
 
 self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
 const { KeyMod: M, KeyCode: K, MarkerSeverity } = monaco;
@@ -57,17 +61,25 @@ const owners = new Map(); // model -> that editor's props ref, so one provider s
 monaco.languages.registerCompletionItemProvider('java', {
   triggerCharacters: ['.'],
   async provideCompletionItems(model, pos) {
+    const source = model.getValue(), offset = model.getOffsetAt(pos);
+    if (!isJavaCodePosition(source, offset)) return { suggestions: [] };
     const word = model.getWordUntilPosition(pos), range = new monaco.Range(pos.lineNumber, word.startColumn, pos.lineNumber, pos.column);
-    const member = model.getLineContent(pos.lineNumber)[word.startColumn - 2] === '.';
+    const member = isJavaMemberPosition(source, offset);
+    const owner = owners.get(model)?.current;
+    if (owner?.autocomplete === false) return { suggestions: [] };
     let found = [];
-    try { found = (await owners.get(model)?.current.onComplete?.(model.getValue(), model.getOffsetAt(pos))) ?? []; } catch {}
+    try { found = (await owner?.onComplete?.(source, offset)) ?? []; } catch {}
     const typed = found.map(c => {
       // "append(CharSequence arg0) : PrintStream" -> row "append(CharSequence)" with the return type on the right, so overloads read apart.
       const [, params = '', type = ''] = /^[^(:]*(\([^)]*\))?\s*(?::\s*(.*))?$/.exec((c.detail || '').replace(/ arg\d+/g, '')) || [];
       const rank = common.indexOf(c.label);
       return { label: { label: c.label, detail: params, description: type }, kind: kinds[c.kind] ?? Kind.Text, insertText: c.insertText ?? c.label, insertTextRules: InsertAsSnippet, sortText: `${rank < 0 ? 9 : 0}${String(Math.max(rank, 0)).padStart(2, '0')}${c.label}` };
     });
-    return { suggestions: [...typed, ...(member ? [] : staticItems)].map(i => ({ ...i, range })) };
+    const extra = (owner?.completionItems ?? []).map(item => ({
+      label: item.label, detail: item.code, documentation: item.description,
+      kind: Kind.Snippet, insertText: item.insertText, insertTextRules: InsertAsSnippet,
+    }));
+    return { suggestions: [...typed, ...(member ? [] : [...extra, ...staticItems])].map(i => ({ ...i, range })) };
   },
 });
 
@@ -81,13 +93,11 @@ monaco.languages.setMonarchTokensProvider('java', { ...language, tokenizer: { ..
   ...language.tokenizer.root,
 ] } });
 
-// Same dark code surface and syntax colours as the course's code blocks (web/style.css).
-let themed = false;
-function defineTheme() {
-  if (themed) return; themed = true;
+// Share the appearance's code colours with the course examples.
+function defineTheme(appearance) {
   const css = getComputedStyle(document.documentElement), v = name => css.getPropertyValue(`--${name}`).trim();
   const fg = name => v(name).replace('#', '');
-  monaco.editor.defineTheme('pip-dark', { base: 'vs-dark', inherit: true,
+  monaco.editor.defineTheme(`pip-${appearance}`, { base: appearance === 'dark' ? 'vs-dark' : 'vs', inherit: true,
     rules: [
       { token: '', foreground: fg('code-text') },
       { token: 'keyword', foreground: fg('syntax-keyword') },
@@ -128,27 +138,37 @@ function syntaxErrors(model) {
   return found;
 }
 
-const savedSize = () => { try { return Number(localStorage.getItem('pip.editorSize')) || 15; } catch { return 15; } };
 const status = { saved: 'Saved', unsaved: 'Unsaved changes', saving: 'Saving…', failed: 'Not saved' };
 
 // Reusable Java editor. sourceRef.current = { get, replace, reveal, focus } for the parent.
-export default function JavaEditor({ docKey, fileName = 'Student.java', initialSource, onSave, onDiagnose, onComplete, onRun, running, sourceRef }) {
+export default function JavaEditor({ docKey, fileName = 'Student.java', initialSource, onSave, onChange, onDiagnose, onComplete, completionItems, onRun, running, sourceRef, hideRun = false, autocomplete = true, lockedInputs }) {
   const host = useRef(), props = useRef(), view = useRef();
-  const [saved, setSaved] = useState('saved'), [size, setSize] = useState(savedSize);
-  props.current = { onSave, onDiagnose, onComplete, onRun };
+  const { resolved, editorSize: size, setEditorSize: setSize } = useAppearance();
+  const [saved, setSaved] = useState('saved');
+  const [lockedNotice, setLockedNotice] = useState('');
+  props.current = { onSave, onChange, onDiagnose, onComplete, completionItems, onRun, autocomplete, running };
   const run = () => { if (!running) props.current.onRun?.(view.current.getValue()); };
   props.current.run = run;
   useEffect(() => {
     let timer = 0, lintTimer = 0;
-    defineTheme();
     const v = view.current = monaco.editor.create(host.current, {
-      value: initialSource, language: 'java', theme: 'pip-dark', ariaLabel: `${fileName} editor`,
+      value: initialSource, language: 'java', theme: resolved === 'dark' ? 'vs-dark' : 'vs', ariaLabel: `${fileName} editor`,
       automaticLayout: true, minimap: { enabled: false }, fontSize: size, lineHeight: 1.55,
+      readOnly: Boolean(running),
       fontFamily: getComputedStyle(document.documentElement).getPropertyValue('--mono').trim() || 'monospace',
-      tabSize: 4, insertSpaces: true, detectIndentation: false, scrollBeyondLastLine: false, renderLineHighlight: 'line',
-      quickSuggestions: true, wordBasedSuggestions: 'off', fixedOverflowWidgets: true,
+      tabSize: 4, insertSpaces: true, detectIndentation: false, scrollBeyondLastLine: false, renderLineHighlight: 'line', wordWrap: 'on',
+      glyphMargin: Boolean(lockedInputs),
+      quickSuggestions: autocomplete, suggestOnTriggerCharacters: autocomplete, snippetSuggestions: autocomplete ? 'inline' : 'none', wordBasedSuggestions: 'off', fixedOverflowWidgets: true,
     });
     const model = v.getModel();
+    let acceptedSource=model.getValue(), protectedLines=lockedInputLines(acceptedSource,lockedInputs), restoring=false, replacing=false, blockedTurn=false;
+    const decoration=v.createDecorationsCollection();
+    const decorate=()=>decoration.set(protectedLines.map(line=>({
+      range:new monaco.Range(model.getPositionAt(line.start).lineNumber,1,model.getPositionAt(line.end).lineNumber,1),
+      options:{isWholeLine:true,className:'pip-locked-input-line',glyphMarginClassName:'codicon codicon-lock pip-locked-input-glyph',
+        hoverMessage:{value:'Given input — this line is read-only.'},glyphMarginHoverMessage:{value:'Given input — this line is read-only.'}},
+    })));
+    decorate();
     owners.set(model, props);
     const save = source => { if (!props.current.onSave) return; setSaved('saving'); Promise.resolve(props.current.onSave(source)).then(() => setSaved(s => s === 'saving' ? 'saved' : s), () => setSaved('failed')); };
     const mark = markers => { if (!model.isDisposed()) monaco.editor.setModelMarkers(model, 'pip', markers); };
@@ -164,7 +184,34 @@ export default function JavaEditor({ docKey, fileName = 'Student.java', initialS
       }));
     };
     lint();
-    model.onDidChangeContent(() => {
+    model.onDidChangeContent(event => {
+      if (restoring) return;
+      if (!replacing && protectedLines.length && (blockedTurn || event.isEolChange || touchesLockedInput(event.changes,protectedLines))) {
+        // This boundary catches model edits, paste, cut, format, undo and redo.
+        // shortcut: rejecting a locked-line edit clears undo history; replace this guard if history must survive rejected edits.
+        const selection=v.getSelections();
+        if (!blockedTurn) {
+          // Monaco can split one multiline input into several model edits.
+          // Reject the remaining edits from that input turn as well.
+          blockedTurn=true;
+          v.updateOptions({readOnly:true});
+          queueMicrotask(()=>{
+            blockedTurn=false;
+            if (!model.isDisposed()) { v.updateOptions({readOnly:Boolean(props.current.running)}); if (selection) v.setSelections(selection); }
+          });
+        }
+        restoring=true;
+        try { model.setValue(acceptedSource); } finally { restoring=false; }
+        if (selection) v.setSelections(selection);
+        decorate();
+        setLockedNotice('Input lines are read-only.');
+        return;
+      }
+      protectedLines=replacing?lockedInputLines(model.getValue(),lockedInputs):moveLockedInputLines(protectedLines,event.changes);
+      acceptedSource=model.getValue();
+      props.current.onChange?.();
+      decorate();
+      setLockedNotice('');
       setSaved('unsaved');
       clearTimeout(timer); timer = setTimeout(() => { timer = 0; save(model.getValue()); }, 500);
       clearTimeout(lintTimer); lintTimer = setTimeout(lint, 400);
@@ -178,7 +225,24 @@ export default function JavaEditor({ docKey, fileName = 'Student.java', initialS
     action('pip.zoomReset', 'Reset zoom', [M.CtrlCmd | K.Digit0, M.CtrlCmd | K.Numpad0], zoom(0));
     if (sourceRef) sourceRef.current = {
       get: () => v.getValue(),
-      replace: source => { v.pushUndoStop(); v.executeEdits('pip', [{ range: model.getFullModelRange(), text: source }]); v.pushUndoStop(); }, // undoable, unlike setValue
+      replace: (source, { resetLockedInputs = false } = {}) => {
+        const nextLines=lockedInputLines(source,lockedInputs);
+        if (lockedInputs && !(resetLockedInputs ? validLockedInputReset(source,lockedInputs) : sameLockedInputLines(protectedLines,nextLines))) {
+          setLockedNotice('Input lines are read-only.');
+          return false;
+        }
+        clearTimeout(timer);
+        if (model.getValue() !== source) {
+          replacing=true;
+          // Host replacements must work while user editing is disabled.
+          try { model.pushStackElement(); model.pushEditOperations(v.getSelections(), [{ range: model.getFullModelRange(), text: source }], () => null); model.pushStackElement(); }
+          finally { replacing=false; }
+        }
+        // Replacement events come from the host after it saves the file.
+        clearTimeout(timer); timer = 0; setSaved('saved');
+        setLockedNotice('');
+        return true;
+      },
       reveal: text => {
         const at = v.getValue().indexOf(text);
         if (at >= 0) { const a = model.getPositionAt(at), b = model.getPositionAt(at + text.length); v.setSelection(monaco.Selection.fromPositions(a, b)); v.revealRangeInCenterIfOutsideViewport(v.getSelection()); }
@@ -194,10 +258,16 @@ export default function JavaEditor({ docKey, fileName = 'Student.java', initialS
       v.dispose();
     };
   }, [docKey]);
-  useEffect(() => { try { localStorage.setItem('pip.editorSize', size); } catch {} view.current?.updateOptions({ fontSize: size }); }, [size]);
+  useEffect(() => {
+    // The provider applies the root's CSS palette in its effect before the next frame.
+    const frame = requestAnimationFrame(() => { defineTheme(resolved); monaco.editor.setTheme(`pip-${resolved}`); });
+    return () => cancelAnimationFrame(frame);
+  }, [resolved, docKey]);
+  useEffect(() => { view.current?.updateOptions({ fontSize: size }); }, [size]);
+  useEffect(() => { view.current?.updateOptions({ readOnly: Boolean(running) }); }, [running]);
   return <div className="java-editor-shell">
-    <div className="editor-bar"><span className="file-title"><Icon name="file-code" /> {fileName}<small role="status">{status[saved]}</small></span>
-      <button className="primary" disabled={running} onClick={run} aria-keyshortcuts={mac ? 'Meta+Enter' : 'Control+Enter'}>{running ? 'Running…' : <><Icon name="play" /> Run <kbd>{mac ? '⌘↵' : 'Ctrl+Enter'}</kbd></>}</button></div>
+    <div className="editor-bar"><span className="file-title"><Icon name="file-code" /> {fileName}<small role="status">{lockedNotice || status[saved]}</small></span>
+      {!hideRun && <button className="primary" disabled={running} onClick={run} aria-keyshortcuts={mac ? 'Meta+Enter' : 'Control+Enter'}>{running ? 'Running…' : <><Icon name="play" /> Run <kbd>{mac ? '⌘↵' : 'Ctrl+Enter'}</kbd></>}</button>}</div>
     <div ref={host} className="java-editor" />
   </div>;
 }

@@ -1,0 +1,54 @@
+/* Shared palette for the app, Radix controls, snippets and Monaco. */
+:root {
+  color-scheme:light;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --header-height:56px; --demo-height:0px;
+  --paper:#f6f7f9; --panel:#fff; --ink:#172033; --muted:#526174; --line:#dbe1ea;
+  --green:#2459c5; --green-hover:#1944a1; --lime:#edf3ff; --focus-border:#2459c5;
+  --action:#2459c5; --action-hover:#1944a1;
+  --region-border:#a3afc0; --inline-code:#edf1f7; --inline-code-border:#c2ccdc; --region-header:#f0f3f8;
+  --danger:#a52d20; --error-surface:#fff0eb; --success-ink:#19734f; --error-ink:#a52d20;
+  --input-surface:#edf3ff; --expected-surface:#edf7f1; --actual-surface:#fff6e5; --visual-surface:#f5f7fb;
+  --code:#f5f7fb; --code-text:#1c2940; --code-muted:#596779; --code-line:#dbe1ea;
+  --code-active:#eaf0f9; --code-selection:#c7dafa;
+  --syntax-keyword:#7442a6; --syntax-type:#954609; --syntax-function:#005ca9;
+  --syntax-punctuation:#34435b; --syntax-string:#246343; --syntax-literal:#97420c; --syntax-variable:#1e4976;
+}
+:root[data-appearance=dark] {
+  color-scheme:dark;
+  --paper:#13161c; --panel:#1d222c; --ink:#eef1f7; --muted:#b2becf; --line:#394351;
+  --green:#a4c2ff; --green-hover:#c0d4ff; --lime:#243654; --focus-border:#a4c2ff;
+  --action:#315cc7; --action-hover:#3b69dd;
+  --region-border:#718198; --inline-code:#303a4a; --inline-code-border:#61728c; --region-header:#272f3d;
+  --danger:#ffb09c; --error-surface:#432c29; --success-ink:#97e5b5; --error-ink:#ffb09c;
+  --input-surface:#20334c; --expected-surface:#203d30; --actual-surface:#43351f; --visual-surface:#242c3a;
+  --code:#171d28; --code-text:#edf1f8; --code-muted:#a9b8cf; --code-line:#344156;
+  --code-active:#232e41; --code-selection:#344d79;
+  --syntax-keyword:#c5adff; --syntax-type:#ffd39e; --syntax-function:#9ecfff;
+  --syntax-punctuation:#c3cee0; --syntax-string:#a6dcb5; --syntax-literal:#ffc899; --syntax-variable:#afd4ef;
+}
+.radix-themes { --accent-9:var(--action); --accent-10:var(--action-hover); --accent-11:var(--green); --accent-a11:var(--green); --accent-contrast:#fff; --default-font-family:var(--font); --color-background:var(--paper); color:var(--ink); }
+body { background:var(--paper); color:var(--ink); -webkit-user-select:none; user-select:none; }
+code, pre, input, textarea, [contenteditable="true"], .monaco-editor,
+code *, pre *, [contenteditable="true"] *, .monaco-editor * { -webkit-user-select:text; user-select:text; }
+:focus-visible { outline:3px solid var(--focus-border); outline-offset:3px; }
+/* Radix tabs draw their keyboard focus ring on the inner label. */
+.rt-BaseTabListTrigger:focus-visible { outline:none; }
+.site-header { position:sticky; top:0; z-index:30; height:var(--header-height); min-height:var(--header-height); padding:0 24px; background:var(--panel); }
+.brand { color:var(--ink); font-size:22px; letter-spacing:-.5px; }
+.brand-bot { color:var(--green); background:var(--lime); display:grid; place-items:center; width:32px; height:32px; border-radius:8px; }
+.app-nav { gap:4px; flex-wrap:nowrap; }
+.app-nav a { display:flex; align-items:center; min-height:40px; padding:8px 14px; border-radius:7px; font-size:14px; color:var(--muted); }
+.app-nav a.active { background:var(--lime); color:var(--green); }
+button.primary:not(:disabled), .primary-link { background:var(--action); border-color:var(--action); color:#fff; transition:none; }
+button.primary:hover:not(:disabled), .primary-link:hover { background:var(--action-hover); border-color:var(--action-hover); color:#fff; }
+button, select { min-height:40px; font-size:14px; }
+button { padding:8px 14px; }
+select { padding:8px 32px 8px 12px; background-color:var(--panel); color:var(--ink); border:1px solid var(--region-border); border-radius:6px; }
+.demo-banner { height:40px; display:flex; align-items:center; justify-content:center; gap:16px; padding:6px 18px; background:var(--lime); border-bottom:1px solid var(--line); color:var(--ink); font-size:13px; }
+.demo-banner a { font-weight:600; white-space:nowrap; }
+body:has(.demo-banner) { --demo-height:40px; }
+.lesson-panel, .project-scroll-nav, .java-code { scrollbar-width:thin; scrollbar-color:var(--muted) var(--paper); }
+.java-code { border:1px solid var(--line); }
+@media (max-width:700px) { .site-header { padding:0 12px; gap:12px; flex-wrap:nowrap; } .app-nav a { padding:8px; font-size:13px; } }
+@media (prefers-reduced-motion:reduce) { *, *::before, *::after { scroll-behavior:auto !important; } }

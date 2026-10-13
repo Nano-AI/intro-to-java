@@ -1,0 +1,19 @@
+/* Workspaces use the unscaled available height, so interface zoom keeps the
+   editor and output inside the window. Values are updated on resize. */
+.settings-card .display-setting { margin-top:22px; }
+.settings-card .display-setting .rt-SelectTrigger { flex-shrink:0; min-width:122px; }
+html .radix-themes[data-is-root-theme='true'] { min-height:var(--app-viewport-height,100dvh); }
+.radix-themes:not([data-is-root-theme='true']) { zoom:var(--app-interface-scale,1); }
+.display-setting>span { font-size:13px; }
+.code-font-control { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.code-font-control .rt-Button { width:40px; min-width:40px; height:40px; padding:0; }
+.code-font-control .icon { width:18px; height:18px; }
+.code-font-control output { min-width:44px; font-size:14px; text-align:center; font-variant-numeric:tabular-nums; }
+.settings-card h2 { display:flex; align-items:center; gap:10px; }
+.settings-heading-icon { display:inline-grid; place-items:center; width:32px; height:32px; flex-shrink:0; border-radius:8px; background:var(--lime); color:var(--green); }
+.settings-heading-icon .icon { width:19px; height:19px; }
+.settings-heading-icon.robot { background:var(--expected-surface); color:var(--success-ink); }
+.settings-heading-icon.backup { background:var(--actual-surface); color:var(--syntax-literal); }
+.settings-heading-icon.java { background:var(--inline-code); color:var(--syntax-keyword); }
+.site-header .app-nav a { gap:7px; white-space:nowrap; }
+.site-header .app-nav .icon { width:16px; height:16px; flex-shrink:0; }

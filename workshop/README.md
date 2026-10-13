@@ -1,139 +1,118 @@
-# Pip — Java Robot Workshop for VS Code
+# Pip — Java Robot Workshop
 
-Pip 0.6.0 teaches beginner Java through **35 top-level learning units and 39 executable coding parts: 30 console programs and nine robot programs**, across six modules. Lesson and Quiz are separate pages; Practice, Project, or Assignment opens **VS Code's real Java editor on the left and Pip's task/results panel on the right**.
+Pip is a standalone Tauri desktop app for learning beginner Java through lessons, code predictions, practice, and robot games. Its built-in editor provides syntax highlighting, Java completion, error underlines, and automatic saving. Java is included in the desktop bundle.
 
-See `docs/RELEASING.md` for verification history.
+Version 0.10.0 includes five cumulative game projects, shorter robot games, ten independent challenges, and final projects. In game projects and independent challenges, Run checks three public examples and Submit checks at least twenty cases. See [release checks](docs/RELEASING.md).
 
-The course is scoped to [UW CSE 121, Spring 2026](https://courses.cs.washington.edu/courses/cse121/26sp/). It is an original tutoring adaptation covering those topics, not a reproduction of UW assignments or an official UW course.
+## Install and update
 
-## Install
+Download [Pip Workshop 0.10.0 for Apple silicon Macs](https://github.com/Nano-AI/intro-to-java/releases/download/v0.10.0/Pip-Workshop-0.10.0-mac-arm64.dmg). Open the `.dmg`, drag **Pip Workshop** into **Applications**, and open the app. This package is for Apple silicon (M-series), not Intel Macs. The student does not need a separate editor or development tools.
 
-1. Use VS Code 1.96 or newer.
-2. Install **Language Support for Java by Red Hat** (`redhat.java`). Pip declares it as an extension dependency. It provides Java completion, formatting, and live editor diagnostics.
-3. Have a JDK available: both `java` and `javac`. Java 21 is recommended for a new setup; Pip's exercises and runner also work with Java 8 or newer. The Java language-server extension has its own runtime requirements.
-4. Open **Extensions → … → Install from VSIX** and choose `pip-workshop-0.6.0.vsix`.
-5. Open a dedicated learning folder, then run **Pip: Open Course** from the Command Palette.
+The app is ad-hoc signed and not notarized. If macOS blocks it after the first launch attempt, open **System Settings → Privacy & Security → Open Anyway** for Pip. See [Apple’s first-open instructions](https://support.apple.com/en-us/102445).
 
-With the VS Code CLI available, installation can also be done with:
+To update, quit Pip and replace the app in Applications. Existing work stays in `~/.pip-java`; replacing the app does not replace that folder. Copy this folder when moving computers or making a backup.
 
-```sh
-code --install-extension redhat.java
-code --install-extension pip-workshop-0.6.0.vsix
-```
+## Learn, practice, and build
 
-Pip is currently distributed as a local VSIX. It has not been published to the Marketplace. No separate Node installation, web server, Rust toolchain, or desktop app is needed by the student.
+1. Choose a module and lesson. Read the explanation, explore its model, and predict the code's result in the quiz.
+2. Open practice and edit `Student.java` in the built-in editor. Keep its generated package line.
+3. Choose **Run**, or press **Command+Enter** on Mac. Compare the input, output and expected output. **Stop** cancels a running program.
+4. Open a module’s **Projects** or **Challenges**. Locked activities show the lessons to finish first.
+5. Game projects start with a short refresher. In the workspace, **Commands** opens documentation and **Checklist** shows steps. **Play demo** replays one solved example without changing code or progress.
+6. In game projects and independent challenges, **Run** checks three public examples; **Submit** runs at least twenty checks. Correct code passes as **Accepted**; **Perfect** additionally requires a completed lint check with no warnings. Supply Relay’s provided input lines are locked in the editor; tests vary their values without changing the saved file.
 
-## First session
+| Module | Homework game | Ideas combined |
+|---|---|---|
+| 1 — Java basics | Supply Relay | Variables, arithmetic, strings, ordered robot instructions |
+| 2 — Loops | Staircase Arena | Nested loops, changing bounds, accumulators, class constants |
+| 3 — Methods | Tower Rescue | Simple methods, parameters, return values, loops, decomposition |
+| 4 — Decisions | Signal Patrol | Scanner, sentinel while loop, if/else, methods, cargo totals |
+| 5 — Arrays | Mosaic Survey | 2D arrays, row helpers, traversal, decisions, exact paint patterns |
 
-1. Open the Pip activity-bar icon and choose **Open course**.
-2. Select a module, then a lesson. Start with **Bring the console online** if Java is new.
-3. Open **Lesson** at `/learn/:lessonId`: two slides, goal and concept plus interactive model. Explore the model, then choose **Take quiz** for the standalone prediction at `/quiz/:lessonId`.
-4. Choose **Start practice**, **Start project**, or **Start assignment** from Lesson or Quiz at any time. Exploring the activity or answering the quiz is optional. Resuming existing code opens coding without forced review or quiz navigation. The coding page contains the task, native `Student.java` file, output/simulator, run checks, and optional review notes. Use Java suggestions and **Format Document**. **Review the lesson** navigates back to the Lesson page. **Show a hint** reveals the unit's authored hint; a second step shows the concept and worked example. Hints never affect completion.
-5. Click **Save & run**, use **Pip: Save and Run Current Lesson** (stable command ID `pip.runLesson`), the editor play button, or **Command/Ctrl + Enter** while editing a Pip `Student.java` or focused inside the Pip panel. The run button shows the shortcut. This saves the real Java file before compilation.
-6. Compare actual output graphics or the 3D replay with the prediction. For a broken program, reproduce the failure, make a small repair, and rerun all cases. On a failed console check, the results panel names the first differing line (missing line, extra line, spacing-only, capitalization-only, or different text) and highlights the differing output lines. Common `javac` errors and runtime exceptions get a plain-language note with the line number above the raw compiler/JVM text. When the original data passes but changed data fails, the feedback says to calculate from the variables instead of printing a fixed answer. On console exercises that read input, **Try own input** runs the saved `Student.java` with typed input and shows its output; it never affects checks or completion.
-7. Passing current code checks completes the unit; every part in a group must pass its own assessment version. Most versions are 2; `debug-semicolon` and `autonomous-docking` are version 3. Review notes are optional, collapsed by default, and autosave at any length, with no minimum-text requirement. Completed titles use strikethrough in module lists, catalogs, progress, completed modules, and completed part buttons, with visible **Completed** status. A teacher can optionally check reasoning and a changed case to assess understanding beyond the automated checks.
+Supply Relay is a shorter 30–60 minute project. The other homework projects have a 90–180 minute planning estimate. The shorter games show their own estimates. Milestones and quiz answers save between sessions. The existing robot challenges and final coding tasks also appear in **Projects**.
 
-Ordinary practice uses `/practice/:lessonId`. **Projects** at `/projects` lists `robot-detour`, `robot-cargo`, and `robot-hoop`, opening `/project/:lessonId`. **Assignments** at `/assignments` lists `autonomous-docking` and `java-final-report`, opening `/assignment/:lessonId`. Legacy `/lesson/:lessonId` links redirect to the appropriate coding route. These catalogs organize existing units; they do not add to the count.
+Prerequisites apply to every project, including previously completed ones. Saved completion and code remain intact while a project is locked. Passing the missing prerequisite lessons unlocks access again.
 
-**Repair a broken declaration** (`debug-semicolon`) is one learning unit with five coding parts: missing semicolon, unknown type, redeclaration, new variable, and copied value. Each has its own `Student.java` file. All five must pass to complete the group; the parent's interactive Lesson, Quiz, and review notes are optional. See `docs/ROADMAP.md` for the part IDs and repair criteria.
+## Independent challenges
 
-For example, build the type, name, and value in the first declaration activity, then type this inside the supplied `main` method:
+Each of the first five modules has two optional **Challenges**, below its projects. The flag and amber card identify independent work, with a 10–20 minute estimate. Each combines two related results or methods. These do not change the guided course's 35 entries or 39 coding practices.
+
+Challenges keep Java highlighting, compiler errors and saving, but turn off autocomplete, hints and solution insertion—even in demo mode. **Run** checks three public examples without awarding a pass. **Submit** checks varied inputs and records successful completion. The required coding practices must pass before a challenge opens.
+
+The stronger assessment requires a new pass. Earlier completion records and saved Java remain intact; extend the existing code and submit again. Ordinary lesson passes remain valid.
+
+See [the problems and starters](docs/CHALLENGES.md), or [the reviewer packet with solutions, cases and grading limits](docs/CHALLENGES-REVIEW.md).
+
+## Preview and appearance
+
+A fresh launch opens **Course**. Projects are linked from their modules; the **Projects** page also groups every activity by module. **Progress** shows the six-module learning map and saved notes.
+
+In **Settings**, choose System, Light, or Dark, adjust interface size, and change the code font size.
+
+Only development builds show **Demo mode**. It opens all activities in a separate temporary workspace. The banner identifies preview mode; code edits and completions there do not alter the student workspace. Turning demo off restores normal prerequisite locks. Preview resets on restart. Java runtime preferences are shared app settings.
+
+## Understand the robot interface
+
+Tile games use printed command strings. For example:
 
 ```java
-int bolts = 4;
-System.out.println(bolts);
+System.out.println("move 3");
+System.out.println("turn left");
+System.out.println("pick up");
 ```
 
-The model illustrates a concept; it does not execute the student's Java. **Save & run** tests the saved real file. For initializer-based cases, the baseline runs the original source without replacing its initializers; later cases change data in temporary copies. Changing the required `0.5` to `0` fails the baseline, while printing a fixed answer fails changed-data cases. In `debug-new-variable`, AST checks also require `parts` and `used` to remain unchanged in `main`.
+The project's **Commands** button lists the commands available in that game and explains positions, facing direction, and item handling. Type `pip` in the editor to find complete command snippets, such as `pipMove`; press **Ctrl+Space** to open suggestions. These snippet names insert real Java statements. The editor also completes Java methods and helpers defined in `Student`.
 
-Pip saves the current Java buffer before running. If a run hangs, use **Pip: Stop Run** or the panel's Stop button. Each process also has a time limit.
+The earlier continuous robot labs use the `Robot` methods shown in their own lesson instructions. Follow the interface documented for the open activity. Replay controls inspect a recorded run; they are not a live Java debugger.
 
-## Files and progress
-
-Lesson files are created under the first workspace folder:
+## Files, progress, and recovery
 
 ```text
-src/pip/lessons/hello_java/Student.java
-src/pip/lessons/first_movement/Student.java
-src/pip/lessons/first_movement/Robot.java
+~/.pip-java/
+  progress.json
+  settings.json
+  src/pip/lessons/<lesson_id>/Student.java
+  src/pip/lessons/<robot_lesson_id>/Robot.java
+  src/pip/games/<game_id>/Student.java
 ```
 
-Each lesson uses a unique Java package so its `Student` class does not clash with other lessons. Keep the generated package line. `Robot.java` is support code for Java tooling; edit `Student.java` for the exercises. The runner uses the extension's bundled support implementation when executing a lab.
+Stable IDs and Java packages keep files separate. Reopening an activity preserves its existing Java file. **Restore starter** asks for confirmation before replacing code. Existing robot support files are also preserved.
 
-In a new learning workspace, Pip sets the workspace-local `java.project.sourcePaths` to `["src"]` so the Java language server resolves those packages correctly. It does not change global Java settings. If a workspace already specifies a different source root, use a dedicated learning folder or explicitly include `src` in that project's configuration.
+The real Java file is authoritative; stored drafts seed missing files. Importing progress merges saved records and does not overwrite existing Java files. Settings shows the storage location. The current import workflow reads `~/.pip-java/pip-progress-import.json`.
 
-Reopening a lesson never overwrites an existing Java file. **Restore starter** is an explicit, undoable editor operation. VS Code's usual Git features can track these files, show diffs, and create commits.
+If progress cannot be read, preserve `progress.json` before repairing it or restoring a backup. Do not delete the Java source folder as part of recovery. Automatic checks provide feedback and record completion; they do not prove full mastery or prevent every shortcut.
 
-Steps, predictions, explanations, activity exploration, and assessment versions are stored in a per-workspace extension storage file. Settings shows the exact path. Reinstalling with the same extension identity preserves them. Saved reviews, quiz answers, and activities remain available for voluntary use; 0.6.0 needs no data migration. Revised code assessments require a passing run at the current assessment version before counting as complete again.
+## Develop and test
 
-Use **Pip: Export Progress Backup** and **Pip: Import Progress Backup** when changing machines or migrating from the browser/Tauri experiments. Older numeric lesson IDs are migrated. Imported drafts seed missing lesson files; existing Java files always take precedence. Back up the Java workspace itself with Git or a filesystem copy too.
-
-## Java setup
-
-Run **Pip: Settings and Java Setup** to check the detected JDK. `pip.javaHome` points to a JDK home, not its `bin` directory. On macOS an example is `/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home`.
-
-Pip looks for the first usable JDK in its configuration, VS Code Java runtime settings, `JAVA_HOME`, macOS `java_home`, and then `PATH`. A Java runtime without `javac` is insufficient. The first Java-language-server startup may take a moment to index the workspace.
-
-Pip does not replace VS Code's editor, formatter, or Java language server. Run-time compiler errors also appear in the native Problems panel as **Pip javac** diagnostics.
-
-## Robot labs
-
-- Drag to orbit; scroll to zoom. Camera buttons provide rotation, top view, and reset.
-- Workshop, Garden lab, and Moon station change scenery, not the grading rules.
-- Choose 1, 20, or 60 decisions per simulated second. Motor commands persist between decisions; motion advances at 60 steps per second independently.
-- Runs produce deterministic traces for replay. Pause and Step inspect the trace; they are not a live Java debugger.
-- Crashes scatter debris with newly sampled directions, speeds, spin, and sizes, plus gravity, bounce, friction, a short flash, and smoke. The debris is not a spiral; these visual variations do not change grading.
-- A newly successful run celebrates with confetti. Replaying the same trace does not award extra progress or repeat the celebration.
-- Settings can disable effects. Reduced-motion preferences suppress the moving effects while keeping static success feedback.
-
-The simulation uses flat-ground differential drive with ideal sensors and no wheel slip. Its projects are original simplified challenges, not an official game clone or an FTC/WPILib-compatible API. The tests check behavior; optional teacher review can assess reasoning, structure, and transfer to unfamiliar problems.
-
-The `autonomous-docking` assignment directly tests `Student.dock` with targets of 30, 24, and 36 cm for the default, nearer, and farther/weaker trials. Each trial must collect, avoid collision, and finish stopped within 4 cm inclusive of its requested target. Optionally compare those three results in review notes. Editing the call in `update` does not change the graded targets: only mission 5 invokes `dock` reflectively; other robot labs call `Student.update`.
-
-The 0.5.0 finish module adds these challenges after docking and the console report:
-
-| Lesson ID | Goal | API additions used in the challenge sequence |
-|---|---|---|
-| `robot-detour` | Drive around a rectangular obstacle to the target; stop without collision. | `x()`, `y()` for position feedback |
-| `robot-cargo` | Collect cargo, avoid the obstacle, and deliver it. | `deliver()`, `wasDelivered()` |
-| `robot-hoop` | Collect one ball, align with the hoop, choose power, shoot, and stop. | `hasBall()`, `shoot(power)`, `scored()` |
-
-All three challenges run for 40 simulated seconds in three start/motor trials and require no collision and a final stop. Detour must finish less than 22 cm from (100, 100); cargo pickup/delivery are at (-100, 80)/(100, 80), with interaction distance strictly less than 22 cm. Hoop pickup is at (0, -70); a shot scores within 18 cm inclusive of (100, 120). Shot power is from zero to one and range is 300 × power cm. The 1.5-second arc is illustrative, not real ballistics. See `docs/ROADMAP.md` for exact geometry and interaction rules.
-
-Existing generated `Robot.java` files are preserved. The new APIs are needed only by the new challenge IDs, whose newly created lesson files receive fresh support; there is no automatic support-file overwrite.
-
-## Build, test, and package
-
-Developers need Node.js supported by Vite (use Node 22.12+ or a current LTS), npm, VS Code, the Java extension, and a JDK.
+Developers need Node.js/npm, Rust/Cargo with platform build tools, and a JDK. From this directory:
 
 ```sh
-npm ci
-npm run build
-npm test
-npm run test:extension
-npm run package
+npm install
+npm run dev:desktop
 ```
 
-`npm run package` builds `pip-workshop-0.6.0.vsix`. The package includes the bundled host, webview assets (including the bundled `web/explosion.js` module), Java support including `InspectSource.java`, and documentation. It excludes development dependencies, old build artifacts, student data, and demo/test profiles.
+For verification and packaging:
 
-For F5 debugging, open this `workshop` folder in VS Code and use **Run Pip extension**. `npm run dev:web` is a visual-preview server only; it does not provide an editor or a Java backend.
+```sh
+npm test
+cargo test --manifest-path src-tauri/Cargo.toml
+npm run test:ui
+npm run build:jre # first build, or when changing the bundled JDK
+npm run build:desktop
+```
 
-`npm test` uses `workshop/runtime/jdk` when it exists, so tests run without setting `JAVA_HOME`.
+`npm test` covers portable grading, real Java programs, progress compatibility, and desktop host behavior. `test:ui` exercises the desktop UI with an isolated test bridge and real Java; it does not replace opening the packaged native app. `build:desktop` creates native packages under `src-tauri/target/release/bundle/`.
 
-See `docs/RELEASING.md` for the live demo command and per-release verification records.
+The bundle requires `src-tauri/jre/`. If it needs rebuilding, run `npm run build:jre` with the intended JDK's `jlink` on `PATH`, then build the desktop app. See [RELEASING.md](docs/RELEASING.md) for package checks.
 
-`npm run test:extension` uses an isolated VS Code profile and Playwright. On macOS it locates `/Applications/Visual Studio Code.app`; other installations can set `VSCODE_EXECUTABLE_PATH`. It reuses an installed `redhat.java` directory read-only. Screenshots are saved under `screenshots/vscode-*.png`. Student-machine responsiveness and teacher assessment remain ongoing follow-up rather than open software verification blockers.
+Java runs locally with the user's permissions. Time and output limits stop common accidental loops; they are not an untrusted-code sandbox.
 
-Grading combines selected JDK AST structure checks, baseline and boundary cases, seeded fresh data, and direct calls to exercise methods. These checks improve feedback and catch common fixed-answer shortcuts. Bundled local checks are inspectable and are not cheat-proof; optional teacher review can assess reasoning and transfer.
+## Documentation and credits
 
-## Local execution boundary
+- [Architecture](docs/ARCHITECTURE.md)
+- [Independent UI review brief](docs/UI-REVIEW-REQUEST.md) and [progress recovery](docs/PROGRESS-RECOVERY.md)
+- [Project briefs](docs/PROJECTS.md) and [review packet](docs/PROJECTS-REVIEW.md)
+- [Curriculum coverage](docs/CURRICULUM.md), [lesson roadmap](docs/ROADMAP.md), and [release procedure](docs/RELEASING.md)
+- [Historical changelog](CHANGELOG.md)
 
-Run trusted teaching code in a trusted learning workspace. Java executes with the local user's permissions; process limits are not an untrusted-code sandbox. Pip does not open an HTTP server. Course material remains readable in an untrusted workspace, but creating/running Java is blocked.
-
-## More documentation
-
-- `docs/ARCHITECTURE.md`: editor/host boundary, files, persistence, and recovery.
-- `docs/CURRICULUM.md`: CSE 121 topic coverage and teacher review.
-- `docs/ROADMAP.md`: all 35 units and the five-part group, Lesson/Quiz/coding routes, tests, and optional teacher guidance.
-- `docs/RELEASING.md`: VSIX releases and future module updates.
-- `CHANGELOG.md`: migration history.
+The course is an original tutoring adaptation of [UW CSE 121, Spring 2026](https://courses.cs.washington.edu/courses/cse121/26sp/) topics, not an official UW course. Project briefs identify their problem inspirations and explain the adaptations.

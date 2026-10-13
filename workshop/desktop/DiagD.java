@@ -45,7 +45,7 @@ public class DiagD {
       in.readFully(buf);
       String code = new String(buf, StandardCharsets.UTF_8);
       rel = rel.replace('\\', '/');
-      List<String> opts = List.of("-proc:none", "-implicit:none", "-sourcepath", root, "-XDshould-stop.ifError=FLOW");
+      List<String> opts = List.of("-proc:none", "-implicit:none", "-Xlint:all,-path", "-sourcepath", root, "-XDshould-stop.ifError=FLOW");
       if (offset != null) {
         out.println(complete(jc, fm, opts, rel, code, Integer.parseInt(offset.trim())));
         out.flush();
@@ -54,17 +54,20 @@ public class DiagD {
       Src src = new Src(rel, code);
       DiagnosticCollector<JavaFileObject> dc = new DiagnosticCollector<>();
       JavacTask task = (JavacTask) jc.getTask(null, fm, dc, opts, null, List.of(src));
-      try { task.analyze(); } catch (Throwable t) { /* diagnostics already collected */ }
+      boolean analyzed = false;
+      try { task.analyze(); analyzed = true; } catch (Throwable t) { /* diagnostics already collected */ }
       StringBuilder sb = new StringBuilder("{\"diagnostics\":[");
       boolean first = true;
       for (Diagnostic<? extends JavaFileObject> d : dc.getDiagnostics()) {
         if (d.getSource() != src) continue;
+        if (d.getKind() != Diagnostic.Kind.ERROR && d.getKind() != Diagnostic.Kind.WARNING && d.getKind() != Diagnostic.Kind.MANDATORY_WARNING) continue;
         if (!first) sb.append(',');
         first = false;
         sb.append("{\"line\":").append(d.getLineNumber()).append(",\"col\":").append(d.getColumnNumber())
           .append(",\"severity\":\"").append(d.getKind()).append("\",\"message\":\"").append(esc(d.getMessage(Locale.ENGLISH))).append("\"}");
       }
-      out.println(sb.append("]}"));
+      boolean errors = dc.getDiagnostics().stream().anyMatch(d -> d.getKind() == Diagnostic.Kind.ERROR);
+      out.println(sb.append("],\"lint\":\"").append(analyzed && !errors ? "complete" : "failed").append("\"}"));
       out.flush();
     }
   }

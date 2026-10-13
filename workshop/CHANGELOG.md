@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.10.0 — Independent challenges and the project workbench
+
+- Add ten two-part challenges across basics, loops, methods, decisions and arrays. Keep compiler errors and syntax highlighting; disable autocomplete, hints and solution insertion. Stronger challenge versions require a new pass while preserving old code and records.
+- Show Description, World and Submission beside the editor. In game projects and independent challenges, Run checks three public examples with input/output; Submit runs at least twenty checks. Correct code with warnings is Accepted; Perfect requires all checks and no lint warnings.
+- Lock Supply Relay’s provided input lines throughout editor operations and validate them in the host. Vary inputs in temporary programs rather than editing saved Java.
+- Simplify Supply Relay to collect one supply and finish at delivery. Keep cumulative homework, command documentation, automatic verifiable checklist steps and manual planning steps.
+- Add module navigation, To do/Review lesson tabs, colored SVG icons, readable code examples, interface scale and code font controls. Keep prerequisite locks and saved work intact.
+- Refresh the 3D board with a round Pip robot, stacked cargo, distinct destination tiles and a stationary scoreboard. Fix hurdle orientation and one-tile jump playback; show speech in a replay transcript. Play demo shows one solved example without editing code or completion.
+- Reuse equivalent compilation inputs and batch helper probes to reduce test time. Runs remain headless; animation is replayed separately.
+- Restrict Demo mode to native development runs, including host-side enforcement. Fix a native WebKit startup import race that hid the development toggle.
+- Publish the Apple silicon installer and refresh the website with current screenshots, download and update instructions. See [release checks](docs/RELEASING.md).
+
+## 0.9.0 — Course-linked projects, demo preview, and clearer screens
+
+- Always open Course on a fresh launch. Consolidate Games and Projects into one module-grouped catalog and retain legacy redirects; link each module directly to its activities.
+- Add Signal Patrol (decisions) and Mosaic Survey (arrays), bringing cumulative homework to five games. Keep existing game IDs, stars, Java files and prior project records compatible.
+- Use Radix Themes controls and one light/dark palette. Replace the dropdown-heavy progress page with a six-module learning map, simplify settings, and split project guidance into Mission, Build steps, Code refresher and Commands.
+- Add session-only demo preview with isolated temporary code/progress, explicit mode banner, full activity access and guarded workspace switching. Student prerequisite locks stay strict.
+- Show selected-world Scanner input and labelled finish/paint-target/hurdle tiles. Keep command autocomplete and real Java checks.
+- Add a dry-run-first, backup-first recovery tool. Restore verified legacy completion records and missing Java files while preserving every existing Java file and current draft.
+- Supply self-contained problem/solution and UI review documents for independent feedback. See the release record for exact verification and native packaging limits.
+
+## 0.8.0 — Tauri homework projects and saved-work compatibility
+
+- Keep Tauri as the only desktop delivery. Remove obsolete VS Code extension entrypoints, manifests, dependencies and test harness; retain reusable Java execution and storage under `host/`.
+- Unify longer activities under **Projects**, preserving legacy links and saved IDs. Require all listed coding prerequisites before opening or running any project, including completed projects, while retaining source and completion records.
+- Add **Supply Relay** (basics), **Staircase Arena** (loops) and **Tower Rescue** (methods), with cumulative robotics gameplay, sample boards, explicit command references, saved milestones, code refreshers and source attribution. Budget two or three 45–60-minute sessions per project.
+- Add highlighted code predictions, game-command editor snippets, sample practice without completion, precise tile-map replay, varied-data checks and independent method probes. Preserve existing student Java/support files, drafts and progress.
+- Add generated student problem handout and a self-contained review packet with solutions and grading limits. Record Tauri-only compatibility requirements in the repository's AGENTS.md.
+- Verification: 84 portable/Java tests and 7 native tests passed; desktop bridge UI checks passed; Apple silicon app and DMG built. Native window interaction remains unverified and the local package is not notarized. See [the exact release record](docs/RELEASING.md).
+
 ## 0.6.0 — Class constants, hints, and clearer feedback
 
 - Add `java-constants` (`Set the shelf count once`) as the last unit of the "Make work repeat" module, after `debug-reset-total`. It closes the CSE 121 "Scope and Class Constants" gap: the task asks for `public static final int SHELVES = 3;` above `main`, used as the `for` loop bound and in a `Scanned N shelves` summary line. The starter reads the loop variable `i` after the loop, a scope compile error. Checks require a class-level `final int SHELVES`, a `for` loop, and four data variants (`SHELVES` at 3, 1, 5, and a random 6–9) so a hardcoded count fails. Rename `java-accumulator`'s topic from "Accumulation, scope & constants" to "Cumulative sums" and drop scope/`final` from its concept text, since `java-constants` now covers them.

@@ -1,7 +1,7 @@
 import { lessons, stepsFor } from './curriculum.js';
 import { hasPassedLesson, hasPassedPart } from '../shared/completion.js';
 
-export const practiceType = lesson => lesson.challenge ? 'Project' : ['java-final-report', 'autonomous-docking'].includes(lesson.id) ? 'Assignment' : 'Practice';
+export const practiceType = lesson => lesson.independent ? 'Challenge' : lesson.challenge || ['java-final-report', 'autonomous-docking'].includes(lesson.id) ? 'Project' : 'Practice';
 export const practicePath = lesson => `/${practiceType(lesson).toLowerCase()}/${lesson.id}`;
 export const quizPath = lesson => `/quiz/${lesson.id}`;
 export const lessonPath = lesson => `/learn/${lesson.id}`;
